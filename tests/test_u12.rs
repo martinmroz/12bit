@@ -168,3 +168,57 @@ fn test_saturating_add() {
 }
 
 // MARK: - Tests - Subtraction
+
+#[test]
+fn test_sub_operator() {
+  let zero = U12::min_value();
+  let  one = U12::from(1u8);
+  let  max = U12::max_value();
+
+  assert_eq!(zero - zero, zero);
+  assert_eq!(one - zero, one);
+  assert_eq!(max - zero, max);
+  assert_eq!(max - one, (0xFFE as u16).unchecked_into());
+}
+
+#[test]
+#[should_panic]
+fn test_sub_operator_underflow() {
+  let one = U12::from(1u8);
+  let min = U12::min_value();
+  let _ = min - one;
+}
+
+#[test]
+fn test_checked_sub() {
+  let zero = U12::min_value();
+  let  one = U12::from(1u8);
+  let  two = U12::from(2u8);
+  let  max = U12::max_value();
+
+  assert_eq!(zero.checked_sub(zero), Some(zero));
+  assert_eq!(zero.checked_sub(one), None);
+  assert_eq!(one.checked_sub(zero), Some(one));
+  assert_eq!(zero.checked_sub(max), None);
+  assert_eq!(max.checked_sub(zero), Some(max));
+  assert_eq!(max.checked_sub(one), Some((0xFFE as u16).unchecked_into()));
+  assert_eq!(max.checked_sub(two), Some((0xFFD as u16).unchecked_into()));
+  assert_eq!(max.checked_sub(max), Some(zero));
+}
+
+#[test]
+fn test_saturating_sub() {
+  let zero = U12::min_value();
+  let  one = U12::from(1u8);
+  let  two = U12::from(2u8);
+  let  max = U12::max_value();
+
+  assert_eq!(zero.saturating_sub(zero), zero);
+  assert_eq!(zero.saturating_sub(one), zero);
+  assert_eq!(one.saturating_sub(zero), one);
+  assert_eq!(zero.saturating_sub(max), zero);
+  assert_eq!(max.saturating_sub(zero), max);
+  assert_eq!(max.saturating_sub(one), (0xFFE as u16).unchecked_into());
+  assert_eq!(max.saturating_sub(two), (0xFFD as u16).unchecked_into());
+  assert_eq!(max.saturating_sub(max), zero);
+}

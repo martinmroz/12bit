@@ -1,6 +1,6 @@
 
 use std::marker;
-use std::ops::Add;
+use std::ops::{Add, Sub};
 
 // TODO: mm: Implement from_str_radix()
 
@@ -255,5 +255,38 @@ impl<'a,'b> Add<&'a U12> for &'b U12 {
   type Output = U12;
   fn add(self, other: &'a U12) -> Self::Output {
     (*self).add(*other)
+  }
+}
+
+// MARK: - Sub
+
+impl Sub<U12> for U12 {
+  type Output = U12;
+  fn sub(self, other: U12) -> Self::Output {
+    match self.checked_sub(other) {
+      Some(result) => result,
+      None => panic!("arithmetic underflow")
+    }
+  }
+}
+
+impl<'a> Sub<U12> for &'a U12 {
+  type Output = U12;
+  fn sub(self, other: U12) -> Self::Output {
+    (*self).sub(other)
+  }
+}
+
+impl<'a> Sub<&'a U12> for U12 {
+  type Output = U12;
+  fn sub(self, other: &'a U12) -> Self::Output {
+    self.sub(*other)
+  }
+}
+
+impl<'a,'b> Sub<&'a U12> for &'b U12 {
+  type Output = U12;
+  fn sub(self, other: &'a U12) -> Self::Output {
+    (*self).sub(*other)
   }
 }
