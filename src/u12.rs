@@ -1,6 +1,6 @@
 
 use std::marker;
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Mul, Not, Sub};
 
 // TODO: mm: Implement from_str_radix()
 
@@ -514,5 +514,21 @@ impl<'a,'b> Div<&'a U12> for &'b U12 {
   type Output = U12;
   fn div(self, other: &'a U12) -> Self::Output {
     (*self).div(*other)
+  }
+}
+
+// MARK: - Not
+
+impl Not for U12 {
+  type Output = U12;
+  fn not(self) -> Self::Output {
+    U12((!self.0) & 0xFFF)
+  }
+}
+
+impl<'a> Not for &'a U12 {
+  type Output = U12;
+  fn not(self) -> Self::Output {
+    (*self).not()
   }
 }
