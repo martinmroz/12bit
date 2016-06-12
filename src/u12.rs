@@ -147,11 +147,32 @@ impl Default for U12 {
 // MARK: - Add
 
 impl Add<U12> for U12 {
-  type Output = Self;
-  fn add(self, other: Self) -> Self::Output {
+  type Output = U12;
+  fn add(self, other: U12) -> Self::Output {
     match self.checked_add(other) {
       Some(result) => result,
       None => panic!("arithmetic overflow")
     }
+  }
+}
+
+impl<'a> Add<U12> for &'a U12 {
+  type Output = U12;
+  fn add(self, other: U12) -> Self::Output {
+    (*self).add(other)
+  }
+}
+
+impl<'a> Add<&'a U12> for U12 {
+  type Output = U12;
+  fn add(self, other: &'a U12) -> Self::Output {
+    self.add(*other)
+  }
+}
+
+impl<'a,'b> Add<&'a U12> for &'b U12 {
+  type Output = U12;
+  fn add(self, other: &'a U12) -> Self::Output {
+    (*self).add(*other)
   }
 }
