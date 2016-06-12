@@ -1,0 +1,6 @@
+[package]
+name = "twelve_bit"
+version = "0.1.0"
+authors = ["Martin Mroz <martinmroz@gmail.com>"]
+
+[dependencies]
