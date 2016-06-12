@@ -48,6 +48,16 @@ impl U12 {
 
   /// Checked integer addition. 
   /// Computes `self + other`, returning `None` if overflow occurred.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::U12;
+  ///
+  /// assert_eq!(U12::from(1u8).checked_add(1u8.into()), Some(U12::from(2u8)));
+  /// assert_eq!(U12::max_value().checked_add(1u8.into()), None);
+  /// ```
   pub fn checked_add(self, other: Self) -> Option<Self> {
     match self.0 + other.0 {
       result @ 0...4095 => Some(U12(result)),
@@ -57,6 +67,16 @@ impl U12 {
 
   /// Saturating integer addition. 
   /// Computes `self + other`, saturating at the numeric bounds instead of overflowing.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::U12;
+  ///
+  /// assert_eq!(U12::from(1u8).saturating_add(1u8.into()), U12::from(2u8));
+  /// assert_eq!(U12::max_value().saturating_add(1u8.into()), U12::max_value());
+  /// ```
   pub fn saturating_add(self, other: Self) -> Self {
     match self.0 + other.0 {
       result @ 0...4095 => U12(result),
@@ -66,8 +86,69 @@ impl U12 {
 
   /// Wrapping (modular) addition. 
   /// Computes `self + other`, wrapping around at the boundary of the type.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::U12;
+  ///
+  /// assert_eq!(U12::from(1u8).wrapping_add(1u8.into()), U12::from(2u8));
+  /// assert_eq!(U12::max_value().wrapping_add(3u8.into()), U12::from(2u8));
+  /// ```
   pub fn wrapping_add(self, other: Self) -> Self {
     U12((self.0 + other.0) & 0xFFF)
+  }
+
+  /// Checked integer subtraction. 
+  /// Computes `self - other`, returning `None` if underflow occurred.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::U12;
+  ///
+  /// assert_eq!(U12::from(1u8).checked_sub(1u8.into()), Some(U12::from(0u8)));
+  /// assert_eq!(U12::min_value().checked_sub(1u8.into()), None);
+  /// ```
+  pub fn checked_sub(self, other: Self) -> Option<Self> {
+    match self.0.checked_sub(other.0) {
+      Some(value) => Some(U12(value)),
+      None => None
+    }
+  }
+
+  /// Saturating integer subtraction. 
+  /// Computes `self - other`, saturating at the numeric bounds instead of overflowing.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::U12;
+  ///
+  /// assert_eq!(U12::from(1u8).saturating_sub(1u8.into()), U12::min_value());
+  /// assert_eq!(U12::min_value().saturating_sub(5u8.into()), U12::min_value());
+  /// ```
+  pub fn saturating_sub(self, other: Self) -> Self {
+    U12(self.0.saturating_sub(other.0))
+  }
+  
+  /// Wrapping (modular) subtraction. 
+  /// Computes `self - other`, wrapping around at the boundary of the type.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::*;
+  ///
+  /// assert_eq!(U12::from(1u8).wrapping_sub(1u8.into()), U12::min_value());
+  /// assert_eq!(U12::min_value().wrapping_sub(5u8.into()), (0xFFB as u16).unchecked_into());
+  /// ```
+  pub fn wrapping_sub(self, other: Self) -> Self {
+    U12(self.0.wrapping_sub(other.0) & 0xFFF)
   }
 
 }
