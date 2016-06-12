@@ -1,6 +1,6 @@
 
 use std::marker;
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Div, Mul, Sub};
 
 // TODO: mm: Implement from_str_radix()
 
@@ -208,6 +208,44 @@ impl U12 {
     U12(self.0.wrapping_mul(other.0) & 0xFFF)
   }
 
+  /// Checked integer division. 
+  /// Computes `self / other`,  returning None if other == 0 or the operation results in underflow or overflow.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::*;
+  ///
+  /// assert_eq!(U12::from(2u8).checked_div(0u8.into()), None);
+  /// assert_eq!(U12::from(2u8).checked_div((2048u16).unchecked_into()), Some(U12::min_value()));
+  /// assert_eq!(U12::from(2u8).checked_div(2u8.into()), Some(U12::from(1u8)));
+  /// ```
+  pub fn checked_div(self, other: Self) -> Option<Self> {
+    match self.0.checked_div(other.0) {
+      Some(small) => Some(U12(small)),
+      _ => None
+    }
+  }
+
+  /// Wrapping (modular) division. 
+  /// Computes self / other. Wrapped division on unsigned types is just normal division. 
+  /// There's no way wrapping could ever happen. This function exists, so that all operations 
+  /// are accounted for in the wrapping operations.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::*;
+  ///
+  /// assert_eq!(U12::from(2u8).wrapping_div((2048u16).unchecked_into()), U12::min_value());
+  /// assert_eq!(U12::from(2u8).wrapping_div(2u8.into()), U12::from(1u8));
+  /// ```
+  pub fn wrapping_div(self, other: Self) -> Self {
+    U12(self.0.wrapping_div(other.0))
+  }
+
 }
 
 // MARK: - Non-Failable Conversions - From Smaller Types
@@ -384,5 +422,40 @@ impl<'a,'b> Mul<&'a U12> for &'b U12 {
   type Output = U12;
   fn mul(self, other: &'a U12) -> Self::Output {
     (*self).mul(*other)
+  }
+}
+
+// MARK: - Div
+
+impl Div<U12> for U12 {
+  type Output = U12;
+  fn div(self, other: U12) -> Self::Output {
+    match self.checked_div(other) {
+      Some(result) => result,
+      None => {
+        panic!("arithmetic exception")
+      }
+    }
+  }
+}
+
+impl<'a> Div<U12> for &'a U12 {
+  type Output = U12;
+  fn div(self, other: U12) -> Self::Output {
+    (*self).div(other)
+  }
+}
+
+impl<'a> Div<&'a U12> for U12 {
+  type Output = U12;
+  fn div(self, other: &'a U12) -> Self::Output {
+    self.div(*other)
+  }
+}
+
+impl<'a,'b> Div<&'a U12> for &'b U12 {
+  type Output = U12;
+  fn div(self, other: &'a U12) -> Self::Output {
+    (*self).div(*other)
   }
 }
