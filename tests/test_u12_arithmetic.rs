@@ -230,3 +230,29 @@ fn test_wrapping_div() {
 fn test_wrapping_div_overflow() {
   let _ = U12::from(255u8).wrapping_div(U12::from(0u8));
 }
+
+// MARK: - Tests - Negation
+
+#[test]
+fn test_checked_neg() {
+  assert_eq!(U12::from(0u8).checked_neg(), Some(0u8.into()));
+  assert_eq!(U12::from(1u8).checked_neg(), None);
+  assert_eq!(U12::from(2u8).checked_neg(), None);
+  assert_eq!(U12::from(255u8).checked_neg(), None);
+}
+
+#[test]
+fn test_wrapping_neg() {
+  assert_eq!(U12::from(0u8).wrapping_neg(), 0u8.into());
+  assert_eq!(U12::from(1u8).wrapping_neg(), 0xFFFu16.unchecked_into());
+  assert_eq!(U12::from(2u8).wrapping_neg(), 0xFFEu16.unchecked_into());
+  assert_eq!(U12::from(255u8).wrapping_neg(), 0xF01u16.unchecked_into());
+}
+
+#[test]
+fn test_overflowing_neg() {
+  assert_eq!(U12::from(0u8).overflowing_neg(), (0u8.into(), false));
+  assert_eq!(U12::from(1u8).overflowing_neg(), (0xFFFu16.unchecked_into(), true));
+  assert_eq!(U12::from(2u8).overflowing_neg(), (0xFFEu16.unchecked_into(), true));
+  assert_eq!(U12::from(255u8).overflowing_neg(), (0xF01u16.unchecked_into(), true));
+}
