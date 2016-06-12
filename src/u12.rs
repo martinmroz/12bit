@@ -2,8 +2,6 @@
 use std::marker;
 use std::ops::{Add, Div, Mul, Not, Sub};
 
-// TODO: mm: Implement from_str_radix()
-
 #[derive(Debug,Clone,Copy,PartialEq,Eq,PartialOrd,Ord)]
 pub struct U12(u16);
 
