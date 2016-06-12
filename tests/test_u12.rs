@@ -109,3 +109,60 @@ fn test_unchecked_into_with_usize() {
 fn test_default() {
   assert_eq!(U12::default(), U12::min_value());
 }
+
+// MARK: - Tests - Addition
+
+#[test]
+fn test_add_operator() {
+  let zero = U12::min_value();
+  let  one = U12::from(1u8);
+  let  max = U12::max_value();
+
+  assert_eq!(zero + zero, zero);
+  assert_eq!(zero + one, one);
+  assert_eq!(one + zero, one);
+  assert_eq!(zero + max, max);
+  assert_eq!(max + zero, max);
+}
+
+#[test]
+#[should_panic]
+fn test_add_operator_overflow() {
+  let one = U12::from(1u8);
+  let max = U12::max_value();
+  let _ = max + one;
+}
+
+#[test]
+fn test_checked_add() {
+  let zero = U12::min_value();
+  let  one = U12::from(1u8);
+  let  two = U12::from(2u8);
+  let  max = U12::max_value();
+
+  assert_eq!(zero.checked_add(zero), Some(zero));
+  assert_eq!(zero.checked_add(one), Some(one));
+  assert_eq!(one.checked_add(zero), Some(one));
+  assert_eq!(zero.checked_add(max), Some(max));
+  assert_eq!(max.checked_add(zero), Some(max));
+  assert_eq!(max.checked_add(one), None);
+  assert_eq!(max.checked_add(two), None);
+  assert_eq!(max.checked_add(max), None);
+}
+
+#[test]
+fn test_saturating_add() {
+  let zero = U12::min_value();
+  let  one = U12::from(1u8);
+  let  two = U12::from(2u8);
+  let  max = U12::max_value();
+
+  assert_eq!(zero.saturating_add(zero), zero);
+  assert_eq!(zero.saturating_add(one), one);
+  assert_eq!(one.saturating_add(zero), one);
+  assert_eq!(zero.saturating_add(max), max);
+  assert_eq!(max.saturating_add(zero), max);
+  assert_eq!(max.saturating_add(one), max);
+  assert_eq!(max.saturating_add(two), max);
+  assert_eq!(max.saturating_add(max), max);
+}

@@ -1,5 +1,6 @@
 
 use std::marker;
+use std::ops::Add;
 
 // TODO: mm: Implement from_str_radix()
 
@@ -45,20 +46,28 @@ impl U12 {
     self.0.trailing_zeros()
   }
 
-  /// Shifts the bits to the left by a specified amount, `n`, wrapping the 
-  /// truncated bits to the end of the resulting integer.
-  pub fn rotate_left(self, n: u32) -> Self {
-    let rotate_left_once = |x: Self| {
-      let value = x.0;
-      let shifted_left = value << 1;
-      let shifted_out = if shifted_left > 0xFFF { 1u16 } else { 0u16 };
-      U12((shifted_left & 0xFFF) | shifted_out)
-    };
+  /// Checked integer addition. 
+  /// Computes `self + other`, returning `None` if overflow occurred.
+  pub fn checked_add(self, other: Self) -> Option<Self> {
+    match self.0 + other.0 {
+      result @ 0...4095 => Some(U12(result)),
+      _ => None
+    }
+  }
 
-    // Rotate self the specified number of times.
-    let mut result = self;
-    for _ in 0 .. n { result = rotate_left_once(result); }
-    result
+  /// Saturating integer addition. 
+  /// Computes `self + other`, saturating at the numeric bounds instead of overflowing.
+  pub fn saturating_add(self, other: Self) -> Self {
+    match self.0 + other.0 {
+      result @ 0...4095 => U12(result),
+      _ => Self::max_value()
+    }
+  }
+
+  /// Wrapping (modular) addition. 
+  /// Computes `self + other`, wrapping around at the boundary of the type.
+  pub fn wrapping_add(self, other: Self) -> Self {
+    U12((self.0 + other.0) & 0xFFF)
   }
 
 }
@@ -132,5 +141,17 @@ impl_failable_into_u12!(usize);
 impl Default for U12 {
   fn default() -> Self {
     U12::min_value()
+  }
+}
+
+// MARK: - Add
+
+impl Add<U12> for U12 {
+  type Output = Self;
+  fn add(self, other: Self) -> Self::Output {
+    match self.checked_add(other) {
+      Some(result) => result,
+      None => panic!("arithmetic overflow")
+    }
   }
 }
