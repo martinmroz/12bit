@@ -92,26 +92,26 @@ impl_from_u12!(usize);
 // MARK: - Failable Conversions - From Larger Types
 
 /// Trait for implementing failable conversions in a generic way.
-pub trait FailableAs<T> where Self: marker::Sized, T: marker::Sized {
+pub trait FailableInto<T> where Self: marker::Sized, T: marker::Sized {
 
   /// Returns the receiver as `Some(T)` if non-truncating, or `None`.
-  fn failable_as(self) -> Option<T>;
+  fn failable_into(self) -> Option<T>;
 
   /// Returns the receiver as `T` by using `convert_as()` and unwrapping the result.
   ///
   /// # Panics
   /// This method will panic if `convert_as` fails.
-  fn unchecked_failable_as(self) -> T {
-    self.failable_as().unwrap()
+  fn unchecked_into(self) -> T {
+    self.failable_into().unwrap()
   }
 
 }
 
 /// Implements FailableAs<U12> for the specified type.
-macro_rules! impl_failable_as_u12 {
+macro_rules! impl_failable_into_u12 {
   ($from:path) => {
-    impl FailableAs<U12> for $from {
-      fn failable_as(self) -> Option<U12> {
+    impl FailableInto<U12> for $from {
+      fn failable_into(self) -> Option<U12> {
         if self > 0xFFF {
           None
         } else {
@@ -122,10 +122,10 @@ macro_rules! impl_failable_as_u12 {
   }
 }
 
-impl_failable_as_u12!(u16);
-impl_failable_as_u12!(u32);
-impl_failable_as_u12!(u64);
-impl_failable_as_u12!(usize);
+impl_failable_into_u12!(u16);
+impl_failable_into_u12!(u32);
+impl_failable_into_u12!(u64);
+impl_failable_into_u12!(usize);
 
 // MARK: - Default Value
 
