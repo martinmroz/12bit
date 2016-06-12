@@ -151,6 +151,63 @@ impl U12 {
     U12(self.0.wrapping_sub(other.0) & 0xFFF)
   }
 
+  /// Checked integer multiplication. 
+  /// Computes `self * other`, returning `None` if overflow occurred.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::*;
+  ///
+  /// assert_eq!(U12::from(2u8).checked_mul(255u8.into()), Some((510 as u16).unchecked_into()));
+  /// assert_eq!(U12::from(2u8).checked_mul((2048u16).unchecked_into()), None);
+  /// assert_eq!(U12::from(2u8).checked_mul((4095u16).unchecked_into()), None);
+  /// ```
+  pub fn checked_mul(self, other: Self) -> Option<Self> {
+    match self.0.checked_mul(other.0) {
+      Some(small) if small < 4096 => Some(U12(small)),
+      _ => None
+    }
+  }
+
+  /// Saturating integer multiplication. 
+  /// Computes `self * other`, saturating at the numeric bounds instead of overflowing.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::*;
+  ///
+  /// assert_eq!(U12::from(2u8).saturating_mul(1u8.into()), 2u8.into());
+  /// assert_eq!(U12::from(2u8).saturating_mul((2048u16).unchecked_into()), U12::max_value());
+  /// assert_eq!(U12::from(2u8).saturating_mul((4095u16).unchecked_into()), U12::max_value());
+  /// ```
+  pub fn saturating_mul(self, other: Self) -> Self {
+    match self.0.checked_mul(other.0) {
+      Some(small) if small < 4096 => U12(small),
+      _ => Self::max_value()
+    }
+  }
+
+  /// Wrapping (modular) multiplication. 
+  /// Computes `self * other`, wrapping around at the boundary of the type.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::*;
+  ///
+  /// assert_eq!(U12::from(2u8).wrapping_mul(1u8.into()), 2u8.into());
+  /// assert_eq!(U12::from(2u8).wrapping_mul((2048u16).unchecked_into()), 0u8.into());
+  /// assert_eq!(U12::from(2u8).wrapping_mul((4095u16).unchecked_into()), (0xFFE as u16).unchecked_into());
+  /// ```
+  pub fn wrapping_mul(self, other: Self) -> Self {
+    U12(self.0.wrapping_mul(other.0) & 0xFFF)
+  }
+
 }
 
 // MARK: - Non-Failable Conversions - From Smaller Types
@@ -199,8 +256,8 @@ pub trait FailableInto<T> where Self: marker::Sized, T: marker::Sized {
 
 /// Implements FailableAs<U12> for the specified type.
 macro_rules! impl_failable_into_u12 {
-  ($from:path) => {
-    impl FailableInto<U12> for $from {
+  ($source_type:path) => {
+    impl FailableInto<U12> for $source_type {
       fn failable_into(self) -> Option<U12> {
         if self > 0xFFF {
           None
@@ -217,7 +274,7 @@ impl_failable_into_u12!(u32);
 impl_failable_into_u12!(u64);
 impl_failable_into_u12!(usize);
 
-// MARK: - Default Value
+// MARK: - Default
 
 impl Default for U12 {
   fn default() -> Self {
@@ -232,7 +289,9 @@ impl Add<U12> for U12 {
   fn add(self, other: U12) -> Self::Output {
     match self.checked_add(other) {
       Some(result) => result,
-      None => panic!("arithmetic overflow")
+      None => {
+        panic!("arithmetic overflow")
+      }
     }
   }
 }
@@ -265,7 +324,9 @@ impl Sub<U12> for U12 {
   fn sub(self, other: U12) -> Self::Output {
     match self.checked_sub(other) {
       Some(result) => result,
-      None => panic!("arithmetic underflow")
+      None => {
+        panic!("arithmetic underflow")
+      }
     }
   }
 }
