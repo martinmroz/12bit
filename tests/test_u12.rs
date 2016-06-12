@@ -167,6 +167,23 @@ fn test_saturating_add() {
   assert_eq!(max.saturating_add(max), max);
 }
 
+#[test]
+fn test_wrapping_add() {
+  let zero = U12::min_value();
+  let  one = U12::from(1u8);
+  let  two = U12::from(2u8);
+  let  max = U12::max_value();
+
+  assert_eq!(zero.wrapping_add(zero), zero);
+  assert_eq!(zero.wrapping_add(one), one);
+  assert_eq!(one.wrapping_add(zero), one);
+  assert_eq!(zero.wrapping_add(max), max);
+  assert_eq!(max.wrapping_add(zero), max);
+  assert_eq!(max.wrapping_add(one), zero);
+  assert_eq!(max.wrapping_add(two), one);
+  assert_eq!(max.wrapping_add(max), 0xFFEu16.unchecked_into());
+}
+
 // MARK: - Tests - Subtraction
 
 #[test]
@@ -223,6 +240,23 @@ fn test_saturating_sub() {
   assert_eq!(max.saturating_sub(max), zero);
 }
 
+#[test]
+fn test_wrapping_sub() {
+  let zero = U12::min_value();
+  let  one = U12::from(1u8);
+  let  two = U12::from(2u8);
+  let  max = U12::max_value();
+
+  assert_eq!(zero.wrapping_sub(zero), zero);
+  assert_eq!(zero.wrapping_sub(one), max);
+  assert_eq!(one.saturating_sub(zero), one);
+  assert_eq!(zero.wrapping_sub(max), one);
+  assert_eq!(max.wrapping_sub(zero), max);
+  assert_eq!(max.wrapping_sub(one), (0xFFE as u16).unchecked_into());
+  assert_eq!(max.wrapping_sub(two), (0xFFD as u16).unchecked_into());
+  assert_eq!(max.wrapping_sub(max), zero);
+}
+
 // MARK: - Tests - Multiplication
 
 #[test]
@@ -255,4 +289,13 @@ fn test_saturating_mul() {
   assert_eq!(U12::from(255u8).saturating_mul(2u8.into()), (510 as u16).unchecked_into());
   assert_eq!(U12::from(2u8).saturating_mul((2048u16).unchecked_into()), U12::max_value());
   assert_eq!(U12::from(2u8).saturating_mul((4095u16).unchecked_into()), U12::max_value());
+}
+
+#[test]
+fn test_wrapping_mul() {
+  assert_eq!(U12::from(2u8).wrapping_mul(0u8.into()), U12::min_value());
+  assert_eq!(U12::from(2u8).wrapping_mul(255u8.into()), (510 as u16).unchecked_into());
+  assert_eq!(U12::from(255u8).wrapping_mul(2u8.into()), (510 as u16).unchecked_into());
+  assert_eq!(U12::from(2u8).wrapping_mul((2048u16).unchecked_into()), U12::min_value());
+  assert_eq!(U12::from(2u8).wrapping_mul((4095u16).unchecked_into()), (0xFFE as u16).unchecked_into());
 }
