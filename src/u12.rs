@@ -1,6 +1,6 @@
 
 use std::marker;
-use std::ops::{Add, Sub};
+use std::ops::{Add, Mul, Sub};
 
 // TODO: mm: Implement from_str_radix()
 
@@ -349,5 +349,40 @@ impl<'a,'b> Sub<&'a U12> for &'b U12 {
   type Output = U12;
   fn sub(self, other: &'a U12) -> Self::Output {
     (*self).sub(*other)
+  }
+}
+
+// MARK: - Mul
+
+impl Mul<U12> for U12 {
+  type Output = U12;
+  fn mul(self, other: U12) -> Self::Output {
+    match self.checked_mul(other) {
+      Some(result) => result,
+      None => {
+        panic!("arithmetic overflow")
+      }
+    }
+  }
+}
+
+impl<'a> Mul<U12> for &'a U12 {
+  type Output = U12;
+  fn mul(self, other: U12) -> Self::Output {
+    (*self).mul(other)
+  }
+}
+
+impl<'a> Mul<&'a U12> for U12 {
+  type Output = U12;
+  fn mul(self, other: &'a U12) -> Self::Output {
+    self.mul(*other)
+  }
+}
+
+impl<'a,'b> Mul<&'a U12> for &'b U12 {
+  type Output = U12;
+  fn mul(self, other: &'a U12) -> Self::Output {
+    (*self).mul(*other)
   }
 }

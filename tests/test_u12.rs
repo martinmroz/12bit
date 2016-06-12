@@ -222,3 +222,37 @@ fn test_saturating_sub() {
   assert_eq!(max.saturating_sub(two), (0xFFD as u16).unchecked_into());
   assert_eq!(max.saturating_sub(max), zero);
 }
+
+// MARK: - Tests - Multiplication
+
+#[test]
+fn test_mul_operator() {
+  assert_eq!(U12::from(2u8) * U12::from(0u8), U12::min_value());
+  assert_eq!(U12::max_value() * U12::min_value(), U12::min_value());
+  assert_eq!(U12::from(2u8) * U12::from(255u8), (510 as u16).unchecked_into());
+  assert_eq!(U12::from(255u8) * U12::from(2u8), (510 as u16).unchecked_into());
+}
+
+#[test]
+#[should_panic]
+fn test_mul_operator_overflow() {
+  let _ = U12::from(2u8) * 2048u16.unchecked_into();
+}
+
+#[test]
+fn test_checked_mul() {
+  assert_eq!(U12::from(2u8).checked_mul(0u8.into()), Some(U12::min_value()));
+  assert_eq!(U12::from(2u8).checked_mul(255u8.into()), Some((510 as u16).unchecked_into()));
+  assert_eq!(U12::from(255u8).checked_mul(2u8.into()), Some((510 as u16).unchecked_into()));
+  assert_eq!(U12::from(2u8).checked_mul((2048u16).unchecked_into()), None);
+  assert_eq!(U12::from(2u8).checked_mul((4095u16).unchecked_into()), None);
+}
+
+#[test]
+fn test_saturating_mul() {
+  assert_eq!(U12::from(2u8).saturating_mul(0u8.into()), U12::min_value());
+  assert_eq!(U12::from(2u8).saturating_mul(255u8.into()), (510 as u16).unchecked_into());
+  assert_eq!(U12::from(255u8).saturating_mul(2u8.into()), (510 as u16).unchecked_into());
+  assert_eq!(U12::from(2u8).saturating_mul((2048u16).unchecked_into()), U12::max_value());
+  assert_eq!(U12::from(2u8).saturating_mul((4095u16).unchecked_into()), U12::max_value());
+}
