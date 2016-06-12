@@ -100,6 +100,27 @@ impl U12 {
     U12((self.0 + other.0) & 0xFFF)
   }
 
+  /// Overflowing addition.
+  /// Computes `self + other`, returning a tuple of the addition along with a 
+  /// boolean indicating whether an arithmetic overflow would occur. 
+  /// If an overflow would have occurred then the wrapped value is returned.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::U12;
+  ///
+  /// assert_eq!(U12::from(1u8).overflowing_add(1u8.into()), (U12::from(2u8), false));
+  /// assert_eq!(U12::max_value().overflowing_add(3u8.into()), (U12::from(2u8), true));
+  /// ```
+  pub fn overflowing_add(self, other: Self) -> (Self, bool) {
+    match self.checked_add(other) {
+      Some(result) => (result, false),
+              None => (self.wrapping_add(other), true)
+    }
+  }
+
   /// Checked integer subtraction. 
   /// Computes `self - other`, returning `None` if underflow occurred.
   ///

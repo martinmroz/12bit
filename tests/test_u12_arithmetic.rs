@@ -77,6 +77,23 @@ fn test_wrapping_add() {
   assert_eq!(max.wrapping_add(max), 0xFFEu16.unchecked_into());
 }
 
+#[test]
+fn test_overflowing_add() {
+  let zero = U12::min_value();
+  let  one = U12::from(1u8);
+  let  two = U12::from(2u8);
+  let  max = U12::max_value();
+
+  assert_eq!(zero.overflowing_add(zero), (zero, false));
+  assert_eq!(zero.overflowing_add(one), (one, false));
+  assert_eq!(one.overflowing_add(zero), (one, false));
+  assert_eq!(zero.overflowing_add(max), (max, false));
+  assert_eq!(max.overflowing_add(zero), (max, false));
+  assert_eq!(max.overflowing_add(one), (zero, true));
+  assert_eq!(max.overflowing_add(two), (one, true));
+  assert_eq!(max.overflowing_add(max), (0xFFEu16.unchecked_into(), true));
+}
+
 // MARK: - Tests - Subtraction
 
 #[test]
