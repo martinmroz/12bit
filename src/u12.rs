@@ -246,6 +246,63 @@ impl U12 {
     U12(self.0.wrapping_div(other.0))
   }
 
+  /// Checked integer negation.
+  /// Computes `-self`, returning `None` unless `self == 0`.
+  /// Note that negating any positive integer will overflow.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::*;
+  ///
+  /// assert_eq!(U12::from(0u8).checked_neg(), Some(0u8.into()));
+  /// assert_eq!(U12::from(2u8).checked_neg(), None);
+  /// ```
+  pub fn checked_neg(self) -> Option<Self> {
+    match self.0 {
+      0 => Some(self),
+      _ => None
+    }
+  }
+
+  /// Wrapping (modular) negation.
+  /// Computes `-self`, wrapping around at the boundary of the type.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::*;
+  ///
+  /// assert_eq!(U12::from(2u8).wrapping_neg(), 0xFFEu16.unchecked_into());
+  /// assert_eq!(U12::from(255u8).wrapping_neg(), 0xF01u16.unchecked_into());
+  /// ```
+  pub fn wrapping_neg(self) -> Self {
+    U12(self.0.wrapping_neg() & 0xFFF)
+  }
+
+  /// Negates self in an overflowing fashion.
+  /// Returns `!self + 1` using wrapping operations to return the value that 
+  /// represents the negation of this unsigned value. Note that for positive 
+  /// unsigned values overflow always occurs, but negating `0` does not overflow.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::*;
+  ///
+  /// assert_eq!(U12::from(0u8).overflowing_neg(), (0u8.into(), false));
+  /// assert_eq!(U12::from(2u8).overflowing_neg(), (0xFFEu16.unchecked_into(), true));
+  /// ```
+  pub fn overflowing_neg(self) -> (U12, bool) {
+    match self.0 {
+      0 => (self, false),
+      _ => (self.wrapping_neg(), true)
+    }
+  }
+
 }
 
 // MARK: - Non-Failable Conversions - From Smaller Types
