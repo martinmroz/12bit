@@ -6,7 +6,7 @@ use twelve_bit::u12::*;
 // MARK: - Tests - Non-Failable Conversions - From Smaller Types
 
 #[test]
-pub fn test_from_u8() {
+fn test_from_u8() {
   assert_eq!(u16::from(U12::from(0u8)), 0u16);
   assert_eq!(u16::from(U12::from(15u8)), 15u16);
   assert_eq!(u16::from(U12::from(255u8)), 255u16);
@@ -14,7 +14,8 @@ pub fn test_from_u8() {
 
 // MARK: - Tests - Non-Failable Conversions - Into Larger Types
 
-pub fn test_into_larger_types() {
+#[test]
+fn test_into_larger_types() {
   let into_16_max: u16 = U12::max_value().into();
   let into_16_min: u16 = U12::min_value().into();
   assert_eq!(into_16_max, 4095u16);
@@ -39,7 +40,7 @@ pub fn test_into_larger_types() {
 // MARK: - Tests - Failable Conversions - From Larger Types
 
 #[test]
-pub fn test_failable_into_with_u16() {
+fn test_failable_into_with_u16() {
   assert_eq!(0u16.failable_into(), Some(U12::min_value()));
   assert_eq!(0u16.unchecked_into(), U12::min_value());
   assert_eq!(15u16.failable_into(), Some(U12::from(15)));
@@ -50,12 +51,12 @@ pub fn test_failable_into_with_u16() {
 
 #[test]
 #[should_panic]
-pub fn test_unchecked_into_with_u16() {
+fn test_unchecked_into_with_u16() {
   let _ = 4096u16.unchecked_into();
 }
 
 #[test]
-pub fn test_failable_into_with_u32() {
+fn test_failable_into_with_u32() {
   assert_eq!(0u32.failable_into(), Some(U12::min_value()));
   assert_eq!(0u32.unchecked_into(), U12::min_value());
   assert_eq!(15u32.failable_into(), Some(U12::from(15u8)));
@@ -66,12 +67,12 @@ pub fn test_failable_into_with_u32() {
 
 #[test]
 #[should_panic]
-pub fn test_unchecked_into_with_u32() {
+fn test_unchecked_into_with_u32() {
   let _ = 4096u32.unchecked_into();
 }
 
 #[test]
-pub fn test_failable_into_with_u64() {
+fn test_failable_into_with_u64() {
   assert_eq!(0u64.failable_into(), Some(U12::min_value()));
   assert_eq!(0u64.unchecked_into(), U12::min_value());
   assert_eq!(15u64.failable_into(), Some(U12::from(15u8)));
@@ -82,12 +83,12 @@ pub fn test_failable_into_with_u64() {
 
 #[test]
 #[should_panic]
-pub fn test_unchecked_into_with_u64() {
+fn test_unchecked_into_with_u64() {
   let _ = 4096u64.unchecked_into();
 }
 
 #[test]
-pub fn test_failable_into_with_usize() {
+fn test_failable_into_with_usize() {
   assert_eq!(0usize.failable_into(), Some(U12::min_value()));
   assert_eq!(0usize.unchecked_into(), U12::min_value());
   assert_eq!(15usize.failable_into(), Some(U12::from(15u8)));
@@ -98,6 +99,13 @@ pub fn test_failable_into_with_usize() {
 
 #[test]
 #[should_panic]
-pub fn test_unchecked_into_with_usize() {
+fn test_unchecked_into_with_usize() {
   let _ = 4096usize.unchecked_into();
+}
+
+// MARK: - Tests - Default Value
+
+#[test]
+fn test_default() {
+  assert_eq!(U12::default(), U12::min_value());
 }
