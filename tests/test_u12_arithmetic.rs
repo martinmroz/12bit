@@ -192,3 +192,41 @@ fn test_wrapping_mul() {
   assert_eq!(U12::from(2u8).wrapping_mul((2048u16).unchecked_into()), U12::min_value());
   assert_eq!(U12::from(2u8).wrapping_mul((4095u16).unchecked_into()), (0xFFE as u16).unchecked_into());
 }
+
+// MARK: - Tests - Division
+
+#[test]
+fn test_div_operator() {
+  assert_eq!(U12::max_value() / U12::max_value(), U12::from(1u8));
+  assert_eq!(U12::from(2u8) / U12::from(255u8), U12::from(0u8));
+  assert_eq!(U12::from(255u8) / U12::from(2u8), U12::from(127u8));
+}
+
+#[test]
+#[should_panic]
+fn test_div_operator_divide_by_zero() {
+  let _ = U12::from(2u8) / U12::from(0u8);
+}
+
+#[test]
+fn test_checked_div() {
+  assert_eq!(U12::max_value().checked_div(U12::max_value()), Some(U12::from(1u8)));
+  assert_eq!(U12::from(2u8).checked_div(U12::from(255u8)), Some(U12::from(0u8)));
+  assert_eq!(U12::from(255u8).checked_div(U12::from(2u8)), Some(U12::from(127u8)));
+  assert_eq!(U12::from(255u8).checked_div(U12::from(1u8)), Some(U12::from(255u8)));
+  assert_eq!(U12::from(255u8).checked_div(U12::from(0u8)), None);
+}
+
+#[test]
+fn test_wrapping_div() {
+  assert_eq!(U12::max_value().wrapping_div(U12::max_value()), U12::from(1u8));
+  assert_eq!(U12::from(2u8).wrapping_div(U12::from(255u8)), U12::from(0u8));
+  assert_eq!(U12::from(255u8).wrapping_div(U12::from(2u8)), U12::from(127u8));
+  assert_eq!(U12::from(255u8).wrapping_div(U12::from(1u8)), U12::from(255u8));
+}
+
+#[test]
+#[should_panic]
+fn test_wrapping_div_overflow() {
+  let _ = U12::from(255u8).wrapping_div(U12::from(0u8));
+}
