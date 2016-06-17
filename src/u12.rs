@@ -1,6 +1,6 @@
 
 use std::marker;
-use std::ops::{Add, Div, Mul, Not, Rem, Sub};
+use std::ops::{Add, Div, Mul, Not, Rem, Shl, ShlAssign, Sub};
 
 #[derive(Debug,Clone,Copy,PartialEq,Eq,PartialOrd,Ord)]
 pub struct U12(u16);
@@ -206,10 +206,9 @@ impl U12 {
   /// assert_eq!(U12::min_value().checked_sub(1u8.into()), None);
   /// ```
   pub fn checked_sub(self, other: Self) -> Option<Self> {
-    match self.0.checked_sub(other.0) {
-      Some(value) => Some(U12(value)),
-      None => None
-    }
+    self.0
+      .checked_sub(other.0)
+      .map(|value| U12(value))
   }
 
   /// Saturating integer subtraction. 
@@ -315,10 +314,9 @@ impl U12 {
   /// assert_eq!(U12::from(2u8).checked_div(2u8.into()), Some(U12::from(1u8)));
   /// ```
   pub fn checked_div(self, other: Self) -> Option<Self> {
-    match self.0.checked_div(other.0) {
-      Some(small) => Some(U12(small)),
-      _ => None
-    }
+    self.0
+      .checked_div(other.0)
+      .map(|small| U12(small))
   }
 
   /// Wrapping (modular) division. 
@@ -412,10 +410,9 @@ impl U12 {
   /// # }
   /// ```
   pub fn checked_rem(self, other: Self) -> Option<Self> {
-    match self.0.checked_rem(other.0) {
-      Some(value) => Some(U12(value)),
-      None => None
-    }
+    self.0
+      .checked_rem(other.0)
+      .map(|value| U12(value))
   }
 
   /// Wrapping (modular) integer remainder.
@@ -459,6 +456,73 @@ impl U12 {
   pub fn overflowing_rem(self, other: Self) -> (Self, bool) {
     let (result, overflow) = self.0.overflowing_rem(other.0);
     (U12(result), overflow)
+  }
+
+  /// Checked shift left. 
+  /// Computes `self << rhs`, returning `None` if `rhs` is larger than or equal to 
+  /// the number of bits in the receiver.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![0b000000000001].checked_shl(12), None);
+  /// assert_eq!(u12![0b000000000001].checked_shl(1), Some(u12![0b000000000010]));
+  /// assert_eq!(u12![0b000000000001].checked_shl(11), Some(u12![0b100000000000]));
+  /// # }
+  /// ```
+  pub fn checked_shl(self, rhs: u32) -> Option<Self> {
+    if rhs >= 12 {
+      None
+    } else {
+      self.0
+        .checked_shl(rhs)
+        .map(|value| U12(value))
+    }
+  }
+
+  /// Panic-free bitwise shift-left; yields `self << mask(rhs)`, where mask removes any 
+  /// high-order bits of rhs that would cause the shift to exceed the bitwidth of the type.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![0b000000000001].wrapping_shl(12), u12![0b000000000001]);
+  /// assert_eq!(u12![0b000000000001].wrapping_shl( 1), u12![0b000000000010]);
+  /// assert_eq!(u12![0b000000000001].wrapping_shl(11), u12![0b100000000000]);
+  /// # }
+  /// ```
+  pub fn wrapping_shl(self, rhs: u32) -> Self {
+    self.checked_shl(rhs % 12).unwrap()
+  }
+
+  /// Shifts self left by rhs bits.
+  /// Returns a tuple of the shifted version of the receiver along with a boolean
+  /// indicating whether the shift value was larger than or equal to the number of
+  /// bits. If the shift value is too large, then value is masked `(N-1)` where N
+  /// is the number of bits, and this value is then used to perform the shift.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![0b000000000001].overflowing_shl(12), (u12![0b000000000001], true));
+  /// assert_eq!(u12![0b000000000001].overflowing_shl( 1), (u12![0b000000000010], false));
+  /// assert_eq!(u12![0b000000000001].overflowing_shl(11), (u12![0b100000000000], false));
+  /// # }
+  /// ```
+  pub fn overflowing_shl(self, rhs: u32) -> (Self, bool) {
+    (self.wrapping_shl(rhs), rhs >= 12)
   }
 
 }
@@ -612,3 +676,75 @@ impl<'a> Not for &'a U12 {
     (*self).not()
   }
 }
+
+// MARK: - Logic Operations
+
+///
+/// Implements an logic trait family for `U12`. This macro generates
+/// implementations for an arithmetic trait `$trait_name` such that the
+/// it is possible to invoke `$trait_method` on all of `U12.op($rhs_type)`, `(&'a U12).op($rhs_type)`,
+/// `U12.op(&'a $rhs_type)` and `(&'a U12).op(&'b $rhs_type)`. The implementation calls through to
+/// `$checked_method` on U12. If the RHS value represented as a 64-bit number exceeds
+/// 12, the implementation panics with the specified `$message`.
+///
+macro_rules! impl_logic_trait_family_for_u12 {
+  ($rhs_type:ident, $trait_name:ident, $trait_method:ident, $checked_method:ident, $message:expr) => {
+
+    // Implementation of U12.op($rhs_type) -> U12.
+    impl $trait_name<$rhs_type> for U12 {
+      type Output = U12;
+      fn $trait_method(self, other: $rhs_type) -> Self::Output {
+        if (other as u64) > (u32::max_value() as u64) {
+          panic!($message)
+        } else {
+          match self.$checked_method(other as u32) {
+            Some(result) => result,
+            None => {
+              panic!($message)
+            }
+          }
+        }
+      }
+    }
+
+    // Implementation of (&'a U12).op($rhs_type) -> U12.
+    impl<'a> $trait_name<$rhs_type> for &'a U12 {
+      type Output = U12;
+      fn $trait_method(self, other: $rhs_type) -> Self::Output {
+        (*self).$trait_method(other)
+      }
+    }
+
+    // Implementation of U12.op(&'a $rhs_type) -> U12.
+    impl<'a> $trait_name<&'a $rhs_type> for U12 {
+      type Output = U12;
+      fn $trait_method(self, other: &'a $rhs_type) -> Self::Output {
+        self.$trait_method(*other)
+      }
+    }
+
+    // Implementation of (&'a U12).op(&'b $rhs_type) -> U12.
+    impl<'a,'b> $trait_name<&'a $rhs_type> for &'b U12 {
+      type Output = U12;
+      fn $trait_method(self, other: &'a $rhs_type) -> Self::Output {
+        (*self).$trait_method(*other)
+      }
+    }
+
+  }
+}
+
+// TODO: mm: Implement Shl<U12>
+
+impl_logic_trait_family_for_u12!(u8,    Shl, shl, checked_shl, "logic overflow");
+impl_logic_trait_family_for_u12!(i8,    Shl, shl, checked_shl, "logic overflow");
+impl_logic_trait_family_for_u12!(u16,   Shl, shl, checked_shl, "logic overflow");
+impl_logic_trait_family_for_u12!(i16,   Shl, shl, checked_shl, "logic overflow");
+impl_logic_trait_family_for_u12!(u32,   Shl, shl, checked_shl, "logic overflow");
+impl_logic_trait_family_for_u12!(i32,   Shl, shl, checked_shl, "logic overflow");
+impl_logic_trait_family_for_u12!(u64,   Shl, shl, checked_shl, "logic overflow");
+impl_logic_trait_family_for_u12!(i64,   Shl, shl, checked_shl, "logic overflow");
+impl_logic_trait_family_for_u12!(usize, Shl, shl, checked_shl, "logic overflow");
+impl_logic_trait_family_for_u12!(isize, Shl, shl, checked_shl, "logic overflow");
+
+// TODO: mm: Implement Shr<U12>
