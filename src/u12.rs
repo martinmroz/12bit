@@ -388,10 +388,10 @@ pub trait FailableInto<T> where Self: marker::Sized, T: marker::Sized {
   /// Returns the receiver as `Some(T)` if non-truncating, or `None`.
   fn failable_into(self) -> Option<T>;
 
-  /// Returns the receiver as `T` by using `convert_as()` and unwrapping the result.
+  /// Returns the receiver as `T` by using `failable_into()` and unwrapping the result.
   ///
   /// # Panics
-  /// This method will panic if `convert_as` fails.
+  /// This method will panic if `failable_into` fails.
   fn unchecked_into(self) -> T {
     self.failable_into().unwrap()
   }
