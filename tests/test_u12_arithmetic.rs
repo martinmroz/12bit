@@ -36,53 +36,38 @@ fn test_checked_add() {
 
 #[test]
 fn test_saturating_add() {
-  let zero = U12::min_value();
-  let  one = U12::from(1u8);
-  let  two = U12::from(2u8);
-  let  max = U12::max_value();
-
-  assert_eq!(zero.saturating_add(zero), zero);
-  assert_eq!(zero.saturating_add(one), one);
-  assert_eq!(one.saturating_add(zero), one);
-  assert_eq!(zero.saturating_add(max), max);
-  assert_eq!(max.saturating_add(zero), max);
-  assert_eq!(max.saturating_add(one), max);
-  assert_eq!(max.saturating_add(two), max);
-  assert_eq!(max.saturating_add(max), max);
+  assert_eq!(u12![0].saturating_add(u12![0]), u12![0]);
+  assert_eq!(u12![0].saturating_add(u12![1]), u12![1]);
+  assert_eq!(u12![1].saturating_add(u12![0]), u12![1]);
+  assert_eq!(u12![0].saturating_add(U12::max_value()), U12::max_value());
+  assert_eq!(U12::max_value().saturating_add(u12![0]), U12::max_value());
+  assert_eq!(U12::max_value().saturating_add(u12![1]), U12::max_value());
+  assert_eq!(U12::max_value().saturating_add(u12![2]), U12::max_value());
+  assert_eq!(U12::max_value().saturating_add(U12::max_value()), U12::max_value());
 }
 
 #[test]
 fn test_wrapping_add() {
-  let zero = U12::min_value();
-  let  one = U12::from(1u8);
-  let  two = U12::from(2u8);
-  let  max = U12::max_value();
-
-  assert_eq!(zero.wrapping_add(zero), zero);
-  assert_eq!(zero.wrapping_add(one), one);
-  assert_eq!(one.wrapping_add(zero), one);
-  assert_eq!(zero.wrapping_add(max), max);
-  assert_eq!(max.wrapping_add(zero), max);
-  assert_eq!(max.wrapping_add(one), zero);
-  assert_eq!(max.wrapping_add(two), one);
-  assert_eq!(max.wrapping_add(max), 0xFFEu16.unchecked_into());
+  assert_eq!(u12![0].wrapping_add(u12![0]), u12![0]);
+  assert_eq!(u12![0].wrapping_add(u12![1]), u12![1]);
+  assert_eq!(u12![1].wrapping_add(u12![0]), u12![1]);
+  assert_eq!(u12![0].wrapping_add(U12::max_value()), U12::max_value());
+  assert_eq!(U12::max_value().wrapping_add(u12![0]), U12::max_value());
+  assert_eq!(U12::max_value().wrapping_add(u12![1]), u12![0]);
+  assert_eq!(U12::max_value().wrapping_add(u12![2]), u12![1]);
+  assert_eq!(U12::max_value().wrapping_add(U12::max_value()), u12![0xFFE]);
 }
 
 #[test]
 fn test_overflowing_add() {
-  let zero = U12::min_value();
-  let  one = U12::from(1u8);
-  let  two = U12::from(2u8);
-  let  max = U12::max_value();
-
-  assert_eq!(zero.overflowing_add(zero), (zero, false));
-  assert_eq!(zero.overflowing_add(one), (one, false));
-  assert_eq!(one.overflowing_add(zero), (one, false));
-  assert_eq!(zero.overflowing_add(max), (max, false));
-  assert_eq!(max.overflowing_add(zero), (max, false));
-  assert_eq!(max.overflowing_add(one), (zero, true));
-  assert_eq!(max.overflowing_add(two), (one, true));
-  assert_eq!(max.overflowing_add(max), (0xFFEu16.unchecked_into(), true));
+  assert_eq!(u12![0].overflowing_add(u12![0]), (u12![0], false));
+  assert_eq!(u12![0].overflowing_add(u12![1]), (u12![1], false));
+  assert_eq!(u12![1].overflowing_add(u12![0]), (u12![1], false));
+  assert_eq!(u12![0].overflowing_add(U12::max_value()), (U12::max_value(), false));
+  assert_eq!(U12::max_value().overflowing_add(u12![0]), (U12::max_value(), false));
+  assert_eq!(U12::max_value().overflowing_add(u12![1]), (u12![0], true));
+  assert_eq!(U12::max_value().overflowing_add(u12![2]), (u12![1], true));
+  assert_eq!(U12::max_value().overflowing_add(U12::max_value()), (u12![0xFFE], true));
 }
 
 // MARK: - Tests - Subtraction
