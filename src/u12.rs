@@ -1,4 +1,5 @@
 
+use std::cmp;
 use std::marker;
 use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Not, Rem, Shl, Shr, Sub};
 
@@ -94,7 +95,10 @@ impl U12 {
   /// # #[macro_use] extern crate twelve_bit;
   /// use twelve_bit::u12::*;
   /// # fn main() {
+  /// assert_eq!(u12![0b111111111111].leading_zeros(), 0);
   /// assert_eq!(u12![0b001011111000].leading_zeros(), 2);
+  /// assert_eq!(u12![0b000011111000].leading_zeros(), 4);
+  /// assert_eq!(u12![0b000000000000].leading_zeros(), 12);
   /// # }
   /// ```
   pub fn leading_zeros(self) -> u32 {
@@ -109,11 +113,14 @@ impl U12 {
   /// # #[macro_use] extern crate twelve_bit;
   /// use twelve_bit::u12::*;
   /// # fn main() {
+  /// assert_eq!(u12![0b111111111111].trailing_zeros(), 0);
   /// assert_eq!(u12![0b001011111000].trailing_zeros(), 3);
+  /// assert_eq!(u12![0b001011110000].trailing_zeros(), 4);
+  /// assert_eq!(u12![0b000000000000].trailing_zeros(), 12);
   /// # }
   /// ```
   pub fn trailing_zeros(self) -> u32 {
-    self.0.trailing_zeros()
+    cmp::min(self.0.trailing_zeros(), 12)
   }
 
   /// Checked integer addition. 
