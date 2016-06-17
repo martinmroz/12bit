@@ -5,6 +5,22 @@ use std::ops::{Add, Div, Mul, Not, Sub};
 #[derive(Debug,Clone,Copy,PartialEq,Eq,PartialOrd,Ord)]
 pub struct U12(u16);
 
+// MARK: - Literal Macro
+
+/// Creates a 12-bit value via unchecked-into conversion.
+/// This is primarily to simplify describing U12 literal values, as the
+/// `$x` parameter is first bound to a 16-bit value. This eliminates the need
+/// for the caller to specify the type of the literal and does compile-time
+/// validation that no literal greater than `0xFFFF` is specified; this
+/// will panic for values in `0x1000...0xFFFF`.
+#[macro_export]
+macro_rules! u12 {
+  ( $x:expr ) => {{
+    let x: u16 = $x;
+    x.unchecked_into()
+  }}
+}
+
 // MARK: - Public Constants
 
 /// The largest value representable by the `U12` type.

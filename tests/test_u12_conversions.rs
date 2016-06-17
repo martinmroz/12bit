@@ -1,4 +1,5 @@
 
+#[macro_use]
 extern crate twelve_bit;
 
 use twelve_bit::u12::*;
@@ -101,6 +102,23 @@ fn test_failable_into_with_usize() {
 #[should_panic]
 fn test_unchecked_into_with_usize() {
   let _ = 4096usize.unchecked_into();
+}
+
+// MARK: - Tests - Convenience Macro
+
+#[test]
+fn test_convenience_macro_accepts_valid_data() {
+  assert_eq!(u12![0], U12::min_value());
+  assert_eq!(u12![0x00], U12::min_value());
+  assert_eq!(u12![0x0000], U12::min_value());
+  assert_eq!(u12![4095], U12::max_value());
+  assert_eq!(u12![0xFFF], U12::max_value());
+}
+
+#[test]
+#[should_panic]
+fn test_convenience_macro_panics_on_large_value() {
+  assert_eq!(u12![0x1000], U12::max_value());
 }
 
 // MARK: - Tests - Default Value
