@@ -7,7 +7,10 @@ pub struct U12(u16);
 
 // MARK: - Public Constants
 
+/// The largest value representable by the `U12` type.
 pub const MAX: U12 = U12(0xFFF);
+
+/// The smallest value representable by the `U12` type.
 pub const MIN: U12 = U12(0x000);
 
 // MARK: - Implementation
@@ -227,7 +230,7 @@ impl U12 {
     U12(self.0.wrapping_mul(other.0) & 0xFFF)
   }
 
-  /// Checked integer division. 
+  /// Checked integer division.
   /// Computes `self / other`,  returning None if other == 0 or the operation results in underflow or overflow.
   ///
   /// # Examples
@@ -396,145 +399,63 @@ impl Default for U12 {
   }
 }
 
-// MARK: - Add
+// MARK: - Arithmetic Operator Traits
 
-impl Add<U12> for U12 {
-  type Output = U12;
-  fn add(self, other: U12) -> Self::Output {
-    match self.checked_add(other) {
-      Some(result) => result,
-      None => {
-        panic!("arithmetic overflow")
+///
+/// Implements an arithmetic trait family for `U12`. This macro generates
+/// implementations for an arithmetic trait `$trait_name` such that the
+/// it is possible to invoke `$trait_fn` on all of `(U12, U12)`, `(&'a U12, U12)`,
+/// `(U12, &'a U12)` and `(&'a U12, &'b U12)`. The implementation calls through to
+/// `$checked_method` on U12. If the `$checked_method` returns `None`, the
+/// trait panics with the message specified as `$message`.
+///
+macro_rules! impl_arithmetic_trait_family_for_u12 {
+  ($trait_name:ident, $trait_fn:ident, $checked_method:ident, $message:expr) => {
+
+    /// Implementation of operation(U12, U12) -> U12.
+    impl $trait_name<U12> for U12 {
+      type Output = U12;
+      fn $trait_fn(self, other: U12) -> Self::Output {
+        match self.$checked_method(other) {
+          Some(result) => result,
+          None => {
+            panic!($message)
+          }
+        }
       }
     }
-  }
-}
 
-impl<'a> Add<U12> for &'a U12 {
-  type Output = U12;
-  fn add(self, other: U12) -> Self::Output {
-    (*self).add(other)
-  }
-}
-
-impl<'a> Add<&'a U12> for U12 {
-  type Output = U12;
-  fn add(self, other: &'a U12) -> Self::Output {
-    self.add(*other)
-  }
-}
-
-impl<'a,'b> Add<&'a U12> for &'b U12 {
-  type Output = U12;
-  fn add(self, other: &'a U12) -> Self::Output {
-    (*self).add(*other)
-  }
-}
-
-// MARK: - Sub
-
-impl Sub<U12> for U12 {
-  type Output = U12;
-  fn sub(self, other: U12) -> Self::Output {
-    match self.checked_sub(other) {
-      Some(result) => result,
-      None => {
-        panic!("arithmetic underflow")
+    /// Implementation of operation(&'a U12, U12) -> U12.
+    impl<'a> $trait_name<U12> for &'a U12 {
+      type Output = U12;
+      fn $trait_fn(self, other: U12) -> Self::Output {
+        (*self).$trait_fn(other)
       }
     }
-  }
-}
 
-impl<'a> Sub<U12> for &'a U12 {
-  type Output = U12;
-  fn sub(self, other: U12) -> Self::Output {
-    (*self).sub(other)
-  }
-}
-
-impl<'a> Sub<&'a U12> for U12 {
-  type Output = U12;
-  fn sub(self, other: &'a U12) -> Self::Output {
-    self.sub(*other)
-  }
-}
-
-impl<'a,'b> Sub<&'a U12> for &'b U12 {
-  type Output = U12;
-  fn sub(self, other: &'a U12) -> Self::Output {
-    (*self).sub(*other)
-  }
-}
-
-// MARK: - Mul
-
-impl Mul<U12> for U12 {
-  type Output = U12;
-  fn mul(self, other: U12) -> Self::Output {
-    match self.checked_mul(other) {
-      Some(result) => result,
-      None => {
-        panic!("arithmetic overflow")
+    /// Implementation of operation(U12, &'a U12) -> U12.
+    impl<'a> $trait_name<&'a U12> for U12 {
+      type Output = U12;
+      fn $trait_fn(self, other: &'a U12) -> Self::Output {
+        self.$trait_fn(*other)
       }
     }
-  }
-}
 
-impl<'a> Mul<U12> for &'a U12 {
-  type Output = U12;
-  fn mul(self, other: U12) -> Self::Output {
-    (*self).mul(other)
-  }
-}
-
-impl<'a> Mul<&'a U12> for U12 {
-  type Output = U12;
-  fn mul(self, other: &'a U12) -> Self::Output {
-    self.mul(*other)
-  }
-}
-
-impl<'a,'b> Mul<&'a U12> for &'b U12 {
-  type Output = U12;
-  fn mul(self, other: &'a U12) -> Self::Output {
-    (*self).mul(*other)
-  }
-}
-
-// MARK: - Div
-
-impl Div<U12> for U12 {
-  type Output = U12;
-  fn div(self, other: U12) -> Self::Output {
-    match self.checked_div(other) {
-      Some(result) => result,
-      None => {
-        panic!("arithmetic exception")
+    /// Implementation of operation(&'a U12, &'b U12) -> U12.
+    impl<'a,'b> $trait_name<&'a U12> for &'b U12 {
+      type Output = U12;
+      fn $trait_fn(self, other: &'a U12) -> Self::Output {
+        (*self).$trait_fn(*other)
       }
     }
+
   }
 }
 
-impl<'a> Div<U12> for &'a U12 {
-  type Output = U12;
-  fn div(self, other: U12) -> Self::Output {
-    (*self).div(other)
-  }
-}
-
-impl<'a> Div<&'a U12> for U12 {
-  type Output = U12;
-  fn div(self, other: &'a U12) -> Self::Output {
-    self.div(*other)
-  }
-}
-
-impl<'a,'b> Div<&'a U12> for &'b U12 {
-  type Output = U12;
-  fn div(self, other: &'a U12) -> Self::Output {
-    (*self).div(*other)
-  }
-}
+impl_arithmetic_trait_family_for_u12!(Add, add, checked_add, "arithmetic overflow");
+impl_arithmetic_trait_family_for_u12!(Sub, sub, checked_sub, "arithmetic underflow");
+impl_arithmetic_trait_family_for_u12!(Mul, mul, checked_mul, "arithmetic overflow");
+impl_arithmetic_trait_family_for_u12!(Div, div, checked_div, "arithmetic exception");
 
 // MARK: - Not
 
