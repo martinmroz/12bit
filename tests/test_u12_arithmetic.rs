@@ -11,7 +11,6 @@ fn test_add_operator() {
   assert_eq!(u12![0] + u12![0], u12![0]);
   assert_eq!(u12![0] + u12![1], u12![1]);
   assert_eq!(u12![1] + u12![0], u12![1]);
-
   assert_eq!(u12![0] + U12::max_value(), U12::max_value());
   assert_eq!(U12::max_value() + u12![0], U12::max_value());
 }
