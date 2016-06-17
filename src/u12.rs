@@ -399,23 +399,23 @@ impl Default for U12 {
   }
 }
 
-// MARK: - Arithmetic Operator Traits
+// MARK: - Arithmetic Operator Traits (Add, Sub, Mul, Div)
 
 ///
 /// Implements an arithmetic trait family for `U12`. This macro generates
 /// implementations for an arithmetic trait `$trait_name` such that the
-/// it is possible to invoke `$trait_fn` on all of `(U12, U12)`, `(&'a U12, U12)`,
-/// `(U12, &'a U12)` and `(&'a U12, &'b U12)`. The implementation calls through to
+/// it is possible to invoke `$trait_method` on all of `U12.op(U12)`, `(&'a U12).op(U12)`,
+/// `U12.op(&'a U12)` and `(&'a U12).op(&'b U12)`. The implementation calls through to
 /// `$checked_method` on U12. If the `$checked_method` returns `None`, the
 /// trait panics with the message specified as `$message`.
 ///
 macro_rules! impl_arithmetic_trait_family_for_u12 {
-  ($trait_name:ident, $trait_fn:ident, $checked_method:ident, $message:expr) => {
+  ($trait_name:ident, $trait_method:ident, $checked_method:ident, $message:expr) => {
 
-    /// Implementation of operation(U12, U12) -> U12.
+    /// Implementation of U12.op(U12) -> U12.
     impl $trait_name<U12> for U12 {
       type Output = U12;
-      fn $trait_fn(self, other: U12) -> Self::Output {
+      fn $trait_method(self, other: U12) -> Self::Output {
         match self.$checked_method(other) {
           Some(result) => result,
           None => {
@@ -425,27 +425,27 @@ macro_rules! impl_arithmetic_trait_family_for_u12 {
       }
     }
 
-    /// Implementation of operation(&'a U12, U12) -> U12.
+    /// Implementation of (&'a U12).op(U12) -> U12.
     impl<'a> $trait_name<U12> for &'a U12 {
       type Output = U12;
-      fn $trait_fn(self, other: U12) -> Self::Output {
-        (*self).$trait_fn(other)
+      fn $trait_method(self, other: U12) -> Self::Output {
+        (*self).$trait_method(other)
       }
     }
 
-    /// Implementation of operation(U12, &'a U12) -> U12.
+    /// Implementation of U12.op(&'a U12) -> U12.
     impl<'a> $trait_name<&'a U12> for U12 {
       type Output = U12;
-      fn $trait_fn(self, other: &'a U12) -> Self::Output {
-        self.$trait_fn(*other)
+      fn $trait_method(self, other: &'a U12) -> Self::Output {
+        self.$trait_method(*other)
       }
     }
 
-    /// Implementation of operation(&'a U12, &'b U12) -> U12.
+    /// Implementation of (&'a U12).op(&'b U12) -> U12.
     impl<'a,'b> $trait_name<&'a U12> for &'b U12 {
       type Output = U12;
-      fn $trait_fn(self, other: &'a U12) -> Self::Output {
-        (*self).$trait_fn(*other)
+      fn $trait_method(self, other: &'a U12) -> Self::Output {
+        (*self).$trait_method(*other)
       }
     }
 
