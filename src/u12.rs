@@ -1,6 +1,6 @@
 
 use std::marker;
-use std::ops::{Add, Div, Mul, Not, Rem, Shl, ShlAssign, Sub};
+use std::ops::{Add, Div, Mul, Not, Rem, Shl, ShlAssign, Shr, ShrAssign, Sub};
 
 #[derive(Debug,Clone,Copy,PartialEq,Eq,PartialOrd,Ord)]
 pub struct U12(u16);
@@ -525,6 +525,73 @@ impl U12 {
     (self.wrapping_shl(rhs), rhs >= 12)
   }
 
+  /// Checked shift right. 
+  /// Computes `self >> rhs`, returning `None` if `rhs` is larger than or 
+  /// equal to the number of bits in the receiver.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![0b100000000000].checked_shr(12), None);
+  /// assert_eq!(u12![0b100000000000].checked_shr( 1), Some(u12![0b010000000000]));
+  /// assert_eq!(u12![0b100000000000].checked_shr(11), Some(u12![0b000000000001]));
+  /// # }
+  /// ```
+  pub fn checked_shr(self, rhs: u32) -> Option<Self> {
+    if rhs >= 12 {
+      None
+    } else {
+      self.0
+        .checked_shr(rhs)
+        .map(|value| U12(value))
+    }
+  }
+
+  /// Panic-free bitwise shift-right; yields `self >> mask(rhs)`, where mask removes any 
+  /// high-order bits of rhs that would cause the shift to exceed the bitwidth of the type.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![0b100000000000].wrapping_shr(12), u12![0b100000000000]);
+  /// assert_eq!(u12![0b100000000000].wrapping_shr( 1), u12![0b010000000000]);
+  /// assert_eq!(u12![0b100000000000].wrapping_shr(11), u12![0b000000000001]);
+  /// # }
+  /// ```
+  pub fn wrapping_shr(self, rhs: u32) -> Self {
+    self.checked_shr(rhs % 12).unwrap()
+  }
+
+  /// Shifts self right by rhs bits.
+  /// Returns a tuple of the shifted version of self along with a boolean indicating 
+  /// whether the shift value was larger than or equal to the number of bits. 
+  /// If the shift value is too large, then value is masked `(N-1)` where `N` is the 
+  /// number of bits, and this value is then used to perform the shift.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![0b100000000000].overflowing_shr(12), (u12![0b100000000000], true));
+  /// assert_eq!(u12![0b100000000000].overflowing_shr( 1), (u12![0b010000000000], false));
+  /// assert_eq!(u12![0b100000000000].overflowing_shr(11), (u12![0b000000000001], false));
+  /// # }
+  /// ```
+  pub fn overflowing_shr(self, rhs: u32) -> (Self, bool) {
+    (self.wrapping_shr(rhs), rhs >= 12)
+  }
+
 }
 
 // MARK: - Non-Failable Conversions - From Smaller Types
@@ -748,3 +815,14 @@ impl_logic_trait_family_for_u12!(usize, Shl, shl, checked_shl, "logic overflow")
 impl_logic_trait_family_for_u12!(isize, Shl, shl, checked_shl, "logic overflow");
 
 // TODO: mm: Implement Shr<U12>
+
+impl_logic_trait_family_for_u12!(u8,    Shr, shr, checked_shr, "logic underflow");
+impl_logic_trait_family_for_u12!(i8,    Shr, shr, checked_shr, "logic underflow");
+impl_logic_trait_family_for_u12!(u16,   Shr, shr, checked_shr, "logic underflow");
+impl_logic_trait_family_for_u12!(i16,   Shr, shr, checked_shr, "logic underflow");
+impl_logic_trait_family_for_u12!(u32,   Shr, shr, checked_shr, "logic underflow");
+impl_logic_trait_family_for_u12!(i32,   Shr, shr, checked_shr, "logic underflow");
+impl_logic_trait_family_for_u12!(u64,   Shr, shr, checked_shr, "logic underflow");
+impl_logic_trait_family_for_u12!(i64,   Shr, shr, checked_shr, "logic underflow");
+impl_logic_trait_family_for_u12!(usize, Shr, shr, checked_shr, "logic underflow");
+impl_logic_trait_family_for_u12!(isize, Shr, shr, checked_shr, "logic underflow");

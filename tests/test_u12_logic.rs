@@ -14,6 +14,8 @@ fn test_not() {
   assert_eq!(! u12![0b111111111111], u12![0b000000000000]);
 }
 
+// MARK: - Tests - Shift Left
+
 #[test]
 fn test_checked_shl() {
   assert_eq!(u12![0b000000000001].checked_shl( 0), Some(u12![0b000000000001]));
@@ -89,4 +91,83 @@ fn test_shl_operator() {
 #[should_panic]
 fn test_shl_operator_panics_on_wrapping() {
   let _ = u12![0b000000000001] << 12;
+}
+
+// MARK: - Tests - Shift Right
+
+#[test]
+fn test_checked_shr() {
+  assert_eq!(u12![0b100000000000].checked_shr( 0), Some(u12![0b100000000000]));
+  assert_eq!(u12![0b100000000000].checked_shr( 1), Some(u12![0b010000000000]));
+  assert_eq!(u12![0b100000000000].checked_shr( 2), Some(u12![0b001000000000]));
+  assert_eq!(u12![0b100000000000].checked_shr( 3), Some(u12![0b000100000000]));
+  assert_eq!(u12![0b100000000000].checked_shr( 4), Some(u12![0b000010000000]));
+  assert_eq!(u12![0b100000000000].checked_shr( 5), Some(u12![0b000001000000]));
+  assert_eq!(u12![0b100000000000].checked_shr( 6), Some(u12![0b000000100000]));
+  assert_eq!(u12![0b100000000000].checked_shr( 7), Some(u12![0b000000010000]));
+  assert_eq!(u12![0b100000000000].checked_shr( 8), Some(u12![0b000000001000]));
+  assert_eq!(u12![0b100000000000].checked_shr( 9), Some(u12![0b000000000100]));
+  assert_eq!(u12![0b100000000000].checked_shr(10), Some(u12![0b000000000010]));
+  assert_eq!(u12![0b100000000000].checked_shr(11), Some(u12![0b000000000001]));
+  assert_eq!(u12![0b100000000000].checked_shr(12), None);
+  assert_eq!(u12![0b100000000000].checked_shr(13), None);
+  assert_eq!(u12![0b100000000000].checked_shr(u32::max_value()), None);
+}
+
+#[test]
+fn test_wrapping_shr() {
+  assert_eq!(u12![0b100000000000].wrapping_shr( 0), u12![0b100000000000]);
+  assert_eq!(u12![0b100000000000].wrapping_shr( 1), u12![0b010000000000]);
+  assert_eq!(u12![0b100000000000].wrapping_shr( 2), u12![0b001000000000]);
+  assert_eq!(u12![0b100000000000].wrapping_shr( 3), u12![0b000100000000]);
+  assert_eq!(u12![0b100000000000].wrapping_shr( 4), u12![0b000010000000]);
+  assert_eq!(u12![0b100000000000].wrapping_shr( 5), u12![0b000001000000]);
+  assert_eq!(u12![0b100000000000].wrapping_shr( 6), u12![0b000000100000]);
+  assert_eq!(u12![0b100000000000].wrapping_shr( 7), u12![0b000000010000]);
+  assert_eq!(u12![0b100000000000].wrapping_shr( 8), u12![0b000000001000]);
+  assert_eq!(u12![0b100000000000].wrapping_shr( 9), u12![0b000000000100]);
+  assert_eq!(u12![0b100000000000].wrapping_shr(10), u12![0b000000000010]);
+  assert_eq!(u12![0b100000000000].wrapping_shr(11), u12![0b000000000001]);
+  assert_eq!(u12![0b100000000000].wrapping_shr(12), u12![0b100000000000]);
+  assert_eq!(u12![0b100000000000].wrapping_shr(13), u12![0b010000000000]);
+}
+
+#[test]
+fn test_overflowing_shr() {
+  assert_eq!(u12![0b100000000000].overflowing_shr( 0), (u12![0b100000000000], false));
+  assert_eq!(u12![0b100000000000].overflowing_shr( 1), (u12![0b010000000000], false));
+  assert_eq!(u12![0b100000000000].overflowing_shr( 2), (u12![0b001000000000], false));
+  assert_eq!(u12![0b100000000000].overflowing_shr( 3), (u12![0b000100000000], false));
+  assert_eq!(u12![0b100000000000].overflowing_shr( 4), (u12![0b000010000000], false));
+  assert_eq!(u12![0b100000000000].overflowing_shr( 5), (u12![0b000001000000], false));
+  assert_eq!(u12![0b100000000000].overflowing_shr( 6), (u12![0b000000100000], false));
+  assert_eq!(u12![0b100000000000].overflowing_shr( 7), (u12![0b000000010000], false));
+  assert_eq!(u12![0b100000000000].overflowing_shr( 8), (u12![0b000000001000], false));
+  assert_eq!(u12![0b100000000000].overflowing_shr( 9), (u12![0b000000000100], false));
+  assert_eq!(u12![0b100000000000].overflowing_shr(10), (u12![0b000000000010], false));
+  assert_eq!(u12![0b100000000000].overflowing_shr(11), (u12![0b000000000001], false));
+  assert_eq!(u12![0b100000000000].overflowing_shr(12), (u12![0b100000000000], true));
+  assert_eq!(u12![0b100000000000].overflowing_shr(13), (u12![0b010000000000], true));
+}
+
+#[test]
+fn test_shr_operator() {
+  assert_eq!(u12![0b100000000000] >> ( 0), u12![0b100000000000]);
+  assert_eq!(u12![0b100000000000] >> ( 1), u12![0b010000000000]);
+  assert_eq!(u12![0b100000000000] >> ( 2), u12![0b001000000000]);
+  assert_eq!(u12![0b100000000000] >> ( 3), u12![0b000100000000]);
+  assert_eq!(u12![0b100000000000] >> ( 4), u12![0b000010000000]);
+  assert_eq!(u12![0b100000000000] >> ( 5), u12![0b000001000000]);
+  assert_eq!(u12![0b100000000000] >> ( 6), u12![0b000000100000]);
+  assert_eq!(u12![0b100000000000] >> ( 7), u12![0b000000010000]);
+  assert_eq!(u12![0b100000000000] >> ( 8), u12![0b000000001000]);
+  assert_eq!(u12![0b100000000000] >> ( 9), u12![0b000000000100]);
+  assert_eq!(u12![0b100000000000] >> (10), u12![0b000000000010]);
+  assert_eq!(u12![0b100000000000] >> (11), u12![0b000000000001]);
+}
+
+#[test]
+#[should_panic]
+fn test_shr_operator_panics_on_wrapping() {
+  let _ = u12![0b000000000001] >> 12;
 }
