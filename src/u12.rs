@@ -65,7 +65,9 @@ impl U12 {
   /// # #[macro_use] extern crate twelve_bit;
   /// use twelve_bit::u12::*;
   /// # fn main() {
+  /// assert_eq!(u12![0b000000000000].count_ones(), 0);
   /// assert_eq!(u12![0b001011111100].count_ones(), 7);
+  /// assert_eq!(u12![0b111111111111].count_ones(), 12)
   /// # }
   /// ```
   pub fn count_ones(self) -> u32 {
@@ -80,7 +82,9 @@ impl U12 {
   /// # #[macro_use] extern crate twelve_bit;
   /// use twelve_bit::u12::*;
   /// # fn main() {
+  /// assert_eq!(u12![0b000000000000].count_zeros(), 12);
   /// assert_eq!(u12![0b001011111000].count_zeros(), 6);
+  /// assert_eq!(u12![0b111111111111].count_zeros(), 0)
   /// # }
   /// ```
   pub fn count_zeros(self) -> u32 {
