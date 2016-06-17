@@ -850,9 +850,9 @@ macro_rules! impl_arithmetic_trait_family_for_u12 {
   }
 }
 
-impl_arithmetic_trait_family_for_u12!(Add, add, checked_add, "arithmetic overflow");
+impl_arithmetic_trait_family_for_u12!(Add, add, checked_add, "arithmetic overflow" );
 impl_arithmetic_trait_family_for_u12!(Sub, sub, checked_sub, "arithmetic underflow");
-impl_arithmetic_trait_family_for_u12!(Mul, mul, checked_mul, "arithmetic overflow");
+impl_arithmetic_trait_family_for_u12!(Mul, mul, checked_mul, "arithmetic overflow" );
 impl_arithmetic_trait_family_for_u12!(Div, div, checked_div, "arithmetic exception");
 impl_arithmetic_trait_family_for_u12!(Rem, rem, checked_rem, "arithmetic exception");
 
