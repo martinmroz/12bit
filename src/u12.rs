@@ -13,6 +13,16 @@ pub struct U12(u16);
 /// for the caller to specify the type of the literal and does compile-time
 /// validation that no literal greater than `0xFFFF` is specified; this
 /// will panic for values in `0x1000...0xFFFF`.
+///
+/// # Example
+/// ```rust
+/// # #[macro_use] extern crate twelve_bit;
+/// use twelve_bit::u12::*;
+/// # fn main() {
+/// assert_eq!(u12![0], U12::min_value());
+/// assert_eq!(u12![4095], U12::max_value());
+/// # }
+/// ```
 #[macro_export]
 macro_rules! u12 {
   ( $x:expr ) => {{
