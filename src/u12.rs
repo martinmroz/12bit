@@ -254,6 +254,27 @@ impl U12 {
     U12(self.0.wrapping_sub(other.0) & 0xFFF)
   }
 
+  /// Overflowing subtraction.
+  /// Computes `self - other`, returning a tuple of the subtraction result along with a 
+  /// boolean indicating whether an arithmetic underflow would occur.
+  /// If an underflow would have occurred then the wrapped value is returned.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```
+  /// use twelve_bit::u12::*;
+  ///
+  /// assert_eq!(U12::from(1u8).overflowing_sub(1u8.into()), (U12::from(0u8), false));
+  /// assert_eq!(U12::min_value().overflowing_sub(1u8.into()), (0xFFFu16.unchecked_into(), true));
+  /// ```
+  pub fn overflowing_sub(self, other: Self) -> (Self, bool) {
+    match self.checked_sub(other) {
+      Some(result) => (result, false),
+              None => (self.wrapping_sub(other), true)
+    }
+  }
+
   /// Checked integer multiplication. 
   /// Computes `self * other`, returning `None` if overflow occurred.
   ///

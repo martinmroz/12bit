@@ -121,6 +121,18 @@ fn test_wrapping_sub() {
   assert_eq!(U12::max_value().wrapping_sub(U12::max_value()), u12![0]);
 }
 
+#[test]
+fn test_overflowing_sub() {
+  assert_eq!(u12![0].overflowing_sub(u12![0]), (u12![0], false));
+  assert_eq!(u12![0].overflowing_sub(u12![1]), (U12::max_value(), true));
+  assert_eq!(u12![1].overflowing_sub(u12![0]), (u12![1], false));
+  assert_eq!(u12![0].overflowing_sub(U12::max_value()), (u12![1], true));
+  assert_eq!(U12::max_value().overflowing_sub(u12![0]), (U12::max_value(), false));
+  assert_eq!(U12::max_value().overflowing_sub(u12![1]), (u12![0xFFE], false));
+  assert_eq!(U12::max_value().overflowing_sub(u12![2]), (u12![0xFFD], false));
+  assert_eq!(U12::max_value().overflowing_sub(U12::max_value()), (u12![0], false));
+}
+
 // MARK: - Tests - Multiplication
 
 #[test]
