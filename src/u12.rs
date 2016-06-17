@@ -1,6 +1,6 @@
 
 use std::marker;
-use std::ops::{Add, Div, Mul, Not, Rem, Shl, ShlAssign, Shr, ShrAssign, Sub};
+use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Not, Rem, Shl, Shr, Sub};
 
 #[derive(Debug,Clone,Copy,PartialEq,Eq,PartialOrd,Ord)]
 pub struct U12(u16);
@@ -570,7 +570,7 @@ impl U12 {
     self.checked_shr(rhs % 12).unwrap()
   }
 
-  /// Shifts self right by rhs bits.
+  /// Shifts the receiver right by `rhs` bits.
   /// Returns a tuple of the shifted version of self along with a boolean indicating 
   /// whether the shift value was larger than or equal to the number of bits. 
   /// If the shift value is too large, then value is masked `(N-1)` where `N` is the 
@@ -590,6 +590,57 @@ impl U12 {
   /// ```
   pub fn overflowing_shr(self, rhs: u32) -> (Self, bool) {
     (self.wrapping_shr(rhs), rhs >= 12)
+  }
+
+  /// Checked bitwise-and of the receiver with `rhs`.
+  /// Computes `self & rhs`. This method cannot fail.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![0b111100001111].checked_bitand(u12![0b111100000000]), Some(u12![0b111100000000]));
+  /// # }
+  /// ```
+  pub fn checked_bitand(self, rhs: Self) -> Option<Self> {
+    Some(U12(self.0.bitand(rhs.0)))
+  }
+
+  /// Checked bitwise-or of the receiver with `rhs`.
+  /// Computes `self | rhs`. This method cannot fail.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![0b111100001111].checked_bitor(u12![0b111100000000]), Some(u12![0b111100001111]));
+  /// # }
+  /// ```
+  pub fn checked_bitor(self, rhs: Self) -> Option<Self> {
+    Some(U12(self.0.bitor(rhs.0)))
+  }
+
+  /// Checked bitwise-xor of the receiver with `rhs`.
+  /// Computes `self ^ rhs`. This method cannot fail.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![0b111100001111].checked_bitxor(u12![0b111100000000]), Some(u12![0b000000001111]));
+  /// # }
+  /// ```
+  pub fn checked_bitxor(self, rhs: Self) -> Option<Self> {
+    Some(U12(self.0.bitxor(rhs.0)))
   }
 
 }
@@ -744,6 +795,18 @@ impl<'a> Not for &'a U12 {
   }
 }
 
+// MARK: - Bitwise Operations
+
+macro_rules! impl_bitwise_trait_family_for_u12 {
+  ($trait_name:ident, $trait_method:ident, $checked_method:ident) => {
+    impl_arithmetic_trait_family_for_u12!($trait_name, $trait_method, $checked_method, "<unreachable>");
+  }
+}
+
+impl_bitwise_trait_family_for_u12!(BitAnd, bitand, checked_bitand);
+impl_bitwise_trait_family_for_u12!(BitOr , bitor , checked_bitor );
+impl_bitwise_trait_family_for_u12!(BitXor, bitxor, checked_bitxor);
+
 // MARK: - Logic Operations
 
 ///
@@ -754,7 +817,7 @@ impl<'a> Not for &'a U12 {
 /// `$checked_method` on U12. If the RHS value represented as a 64-bit number exceeds
 /// 12, the implementation panics with the specified `$message`.
 ///
-macro_rules! impl_logic_trait_family_for_u12 {
+macro_rules! impl_shift_trait_family_for_u12 {
   ($rhs_type:ident, $trait_name:ident, $trait_method:ident, $checked_method:ident, $message:expr) => {
 
     // Implementation of U12.op($rhs_type) -> U12.
@@ -803,26 +866,26 @@ macro_rules! impl_logic_trait_family_for_u12 {
 
 // TODO: mm: Implement Shl<U12>
 
-impl_logic_trait_family_for_u12!(u8,    Shl, shl, checked_shl, "logic overflow");
-impl_logic_trait_family_for_u12!(i8,    Shl, shl, checked_shl, "logic overflow");
-impl_logic_trait_family_for_u12!(u16,   Shl, shl, checked_shl, "logic overflow");
-impl_logic_trait_family_for_u12!(i16,   Shl, shl, checked_shl, "logic overflow");
-impl_logic_trait_family_for_u12!(u32,   Shl, shl, checked_shl, "logic overflow");
-impl_logic_trait_family_for_u12!(i32,   Shl, shl, checked_shl, "logic overflow");
-impl_logic_trait_family_for_u12!(u64,   Shl, shl, checked_shl, "logic overflow");
-impl_logic_trait_family_for_u12!(i64,   Shl, shl, checked_shl, "logic overflow");
-impl_logic_trait_family_for_u12!(usize, Shl, shl, checked_shl, "logic overflow");
-impl_logic_trait_family_for_u12!(isize, Shl, shl, checked_shl, "logic overflow");
+impl_shift_trait_family_for_u12!(u8,    Shl, shl, checked_shl, "logic overflow");
+impl_shift_trait_family_for_u12!(i8,    Shl, shl, checked_shl, "logic overflow");
+impl_shift_trait_family_for_u12!(u16,   Shl, shl, checked_shl, "logic overflow");
+impl_shift_trait_family_for_u12!(i16,   Shl, shl, checked_shl, "logic overflow");
+impl_shift_trait_family_for_u12!(u32,   Shl, shl, checked_shl, "logic overflow");
+impl_shift_trait_family_for_u12!(i32,   Shl, shl, checked_shl, "logic overflow");
+impl_shift_trait_family_for_u12!(u64,   Shl, shl, checked_shl, "logic overflow");
+impl_shift_trait_family_for_u12!(i64,   Shl, shl, checked_shl, "logic overflow");
+impl_shift_trait_family_for_u12!(usize, Shl, shl, checked_shl, "logic overflow");
+impl_shift_trait_family_for_u12!(isize, Shl, shl, checked_shl, "logic overflow");
 
 // TODO: mm: Implement Shr<U12>
 
-impl_logic_trait_family_for_u12!(u8,    Shr, shr, checked_shr, "logic underflow");
-impl_logic_trait_family_for_u12!(i8,    Shr, shr, checked_shr, "logic underflow");
-impl_logic_trait_family_for_u12!(u16,   Shr, shr, checked_shr, "logic underflow");
-impl_logic_trait_family_for_u12!(i16,   Shr, shr, checked_shr, "logic underflow");
-impl_logic_trait_family_for_u12!(u32,   Shr, shr, checked_shr, "logic underflow");
-impl_logic_trait_family_for_u12!(i32,   Shr, shr, checked_shr, "logic underflow");
-impl_logic_trait_family_for_u12!(u64,   Shr, shr, checked_shr, "logic underflow");
-impl_logic_trait_family_for_u12!(i64,   Shr, shr, checked_shr, "logic underflow");
-impl_logic_trait_family_for_u12!(usize, Shr, shr, checked_shr, "logic underflow");
-impl_logic_trait_family_for_u12!(isize, Shr, shr, checked_shr, "logic underflow");
+impl_shift_trait_family_for_u12!(u8,    Shr, shr, checked_shr, "logic underflow");
+impl_shift_trait_family_for_u12!(i8,    Shr, shr, checked_shr, "logic underflow");
+impl_shift_trait_family_for_u12!(u16,   Shr, shr, checked_shr, "logic underflow");
+impl_shift_trait_family_for_u12!(i16,   Shr, shr, checked_shr, "logic underflow");
+impl_shift_trait_family_for_u12!(u32,   Shr, shr, checked_shr, "logic underflow");
+impl_shift_trait_family_for_u12!(i32,   Shr, shr, checked_shr, "logic underflow");
+impl_shift_trait_family_for_u12!(u64,   Shr, shr, checked_shr, "logic underflow");
+impl_shift_trait_family_for_u12!(i64,   Shr, shr, checked_shr, "logic underflow");
+impl_shift_trait_family_for_u12!(usize, Shr, shr, checked_shr, "logic underflow");
+impl_shift_trait_family_for_u12!(isize, Shr, shr, checked_shr, "logic underflow");
