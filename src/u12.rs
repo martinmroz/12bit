@@ -437,7 +437,10 @@ pub trait FailableInto<T> where Self: marker::Sized, T: marker::Sized {
   /// # Panics
   /// This method will panic if `failable_into` fails.
   fn unchecked_into(self) -> T {
-    self.failable_into().unwrap()
+    match self.failable_into() {
+      Some(value) => value,
+      None => panic!("unchecked conversion failed")
+    }
   }
 
 }
