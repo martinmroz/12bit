@@ -332,6 +332,29 @@ impl U12 {
     U12(self.0.wrapping_mul(other.0) & 0xFFF)
   }
 
+  /// Overflowing multiplication.
+  /// Returns a tuple of the multiplication along with a boolean indicating whether an arithmetic 
+  /// overflow would occur. If an overflow would have occurred then the wrapped value is returned.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![2].overflowing_mul(u12![1]), (u12![2], false));
+  /// assert_eq!(u12![2].overflowing_mul(u12![2048]), (u12![0], true));
+  /// assert_eq!(u12![2].overflowing_mul(u12![4095]), (u12![0xFFE], true));
+  /// # }
+  /// ```
+  pub fn overflowing_mul(self, other: Self) -> (Self, bool) {
+    match self.checked_mul(other) {
+      Some(result) => (result, false),
+              None => (self.wrapping_mul(other), true)
+    }
+  }
+
   /// Checked integer division.
   /// Computes `self / other`,  returning None if other == 0 or the operation results in underflow or overflow.
   ///

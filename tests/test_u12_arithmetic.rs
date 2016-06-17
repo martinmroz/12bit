@@ -176,6 +176,16 @@ fn test_wrapping_mul() {
   assert_eq!(u12![2].wrapping_mul(u12![4095]), u12![0xFFE]);
 }
 
+#[test]
+fn test_overflowing_mul() {
+  assert_eq!(u12![2].overflowing_mul(u12![0]), (U12::min_value(), false));
+  assert_eq!(u12![2].overflowing_mul(u12![255]), (u12![510], false));
+  assert_eq!(u12![255].overflowing_mul(u12![2]), (u12![510], false));
+  assert_eq!(u12![2].overflowing_mul(u12![2048]), (U12::min_value(), true));
+  assert_eq!(u12![2].overflowing_mul(u12![4095]), (u12![0xFFE], true));
+}
+
+
 // MARK: - Tests - Division
 
 #[test]
