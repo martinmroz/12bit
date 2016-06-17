@@ -202,6 +202,44 @@ fn test_wrapping_div_overflow() {
   let _ = u12![255].wrapping_div(u12![0]);
 }
 
+// MARK: - Tests - Remainder
+
+#[test]
+fn test_rem_operator() {
+  assert_eq!(U12::max_value() % U12::max_value(), u12![0]);
+  assert_eq!(u12![2] % u12![255], u12![2]);
+  assert_eq!(u12![255] % u12![2], u12![1]);
+}
+
+#[test]
+#[should_panic]
+fn test_rem_operator_divide_by_zero() {
+  let _ = u12![2] % u12![0];
+}
+
+#[test]
+fn test_checked_rem() {
+  assert_eq!(U12::max_value().checked_rem(U12::max_value()), Some(u12![0]));
+  assert_eq!(u12![2].checked_rem(u12![255]), Some(u12![2]));
+  assert_eq!(u12![255].checked_rem(u12![2]), Some(u12![1]));
+  assert_eq!(u12![255].checked_rem(u12![1]), Some(u12![0]));
+  assert_eq!(u12![255].checked_rem(u12![0]), None);
+}
+
+#[test]
+fn test_wrapping_rem() {
+  assert_eq!(U12::max_value().wrapping_rem(U12::max_value()), u12![0]);
+  assert_eq!(u12![2].wrapping_rem(u12![255]), u12![2]);
+  assert_eq!(u12![255].wrapping_rem(u12![2]), u12![1]);
+  assert_eq!(u12![255].wrapping_rem(u12![1]), u12![0]);
+}
+
+#[test]
+#[should_panic]
+fn test_wrapping_rem_divide_by_zero() {
+  let _ = u12![255].wrapping_rem(u12![0]);
+}
+
 // MARK: - Tests - Negation
 
 #[test]
