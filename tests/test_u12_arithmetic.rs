@@ -24,19 +24,14 @@ fn test_add_operator_overflow() {
 
 #[test]
 fn test_checked_add() {
-  let zero = U12::min_value();
-  let  one = U12::from(1u8);
-  let  two = U12::from(2u8);
-  let  max = U12::max_value();
-
-  assert_eq!(zero.checked_add(zero), Some(zero));
-  assert_eq!(zero.checked_add(one), Some(one));
-  assert_eq!(one.checked_add(zero), Some(one));
-  assert_eq!(zero.checked_add(max), Some(max));
-  assert_eq!(max.checked_add(zero), Some(max));
-  assert_eq!(max.checked_add(one), None);
-  assert_eq!(max.checked_add(two), None);
-  assert_eq!(max.checked_add(max), None);
+  assert_eq!(u12![0].checked_add(u12![0]), Some(u12![0]));
+  assert_eq!(u12![0].checked_add(u12![1]), Some(u12![1]));
+  assert_eq!(u12![1].checked_add(u12![0]), Some(u12![1]));
+  assert_eq!(u12![0].checked_add(U12::max_value()), Some(U12::max_value()));
+  assert_eq!(U12::max_value().checked_add(u12![0]), Some(U12::max_value()));
+  assert_eq!(U12::max_value().checked_add(u12![1]), None);
+  assert_eq!(U12::max_value().checked_add(u12![2]), None);
+  assert_eq!(U12::max_value().checked_add(U12::max_value()), None);
 }
 
 #[test]
