@@ -1,4 +1,5 @@
 
+#[macro_use]
 extern crate twelve_bit;
 
 use twelve_bit::u12::*;
@@ -7,23 +8,18 @@ use twelve_bit::u12::*;
 
 #[test]
 fn test_add_operator() {
-  let zero = U12::min_value();
-  let  one = U12::from(1u8);
-  let  max = U12::max_value();
+  assert_eq!(u12![0] + u12![0], u12![0]);
+  assert_eq!(u12![0] + u12![1], u12![1]);
+  assert_eq!(u12![1] + u12![0], u12![1]);
 
-  assert_eq!(zero + zero, zero);
-  assert_eq!(zero + one, one);
-  assert_eq!(one + zero, one);
-  assert_eq!(zero + max, max);
-  assert_eq!(max + zero, max);
+  assert_eq!(u12![0] + U12::max_value(), U12::max_value());
+  assert_eq!(U12::max_value() + u12![0], U12::max_value());
 }
 
 #[test]
 #[should_panic]
 fn test_add_operator_overflow() {
-  let one = U12::from(1u8);
-  let max = U12::max_value();
-  let _ = max + one;
+  let _ = U12::max_value() + u12![1];
 }
 
 #[test]

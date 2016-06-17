@@ -27,7 +27,8 @@ pub struct U12(u16);
 macro_rules! u12 {
   ( $x:expr ) => {{
     let x: u16 = $x;
-    x.unchecked_into()
+    let value: U12 = x.unchecked_into();
+    value
   }}
 }
 
