@@ -185,7 +185,6 @@ fn test_overflowing_mul() {
   assert_eq!(u12![2].overflowing_mul(u12![4095]), (u12![0xFFE], true));
 }
 
-
 // MARK: - Tests - Division
 
 #[test]
@@ -222,6 +221,20 @@ fn test_wrapping_div() {
 #[should_panic]
 fn test_wrapping_div_overflow() {
   let _ = u12![255].wrapping_div(u12![0]);
+}
+
+#[test]
+fn test_overflowing_div() {
+  assert_eq!(U12::max_value().overflowing_div(U12::max_value()), (u12![1], false));
+  assert_eq!(u12![2].overflowing_div(u12![255]), (u12![0], false));
+  assert_eq!(u12![255].overflowing_div(u12![2]), (u12![127], false));
+  assert_eq!(u12![255].overflowing_div(u12![1]), (u12![255], false));
+}
+
+#[test]
+#[should_panic]
+fn test_overflowing_div_overflow() {
+  let _ = u12![255].overflowing_div(u12![0]);
 }
 
 // MARK: - Tests - Remainder

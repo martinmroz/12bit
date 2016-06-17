@@ -356,7 +356,8 @@ impl U12 {
   }
 
   /// Checked integer division.
-  /// Computes `self / other`,  returning None if other == 0 or the operation results in underflow or overflow.
+  /// Computes `self / other`,  returning None if other == 0 or the operation results in 
+  /// underflow or overflow.
   ///
   /// # Examples
   /// Basic usage:
@@ -390,6 +391,27 @@ impl U12 {
   /// ```
   pub fn wrapping_div(self, other: Self) -> Self {
     U12(self.0.wrapping_div(other.0))
+  }
+
+  /// Calculates the divisor when the receiver is divided by `rhs`.
+  /// Returns a tuple of the divisor along with a boolean indicating whether an arithmetic 
+  /// overflow would occur. Note that for unsigned integers overflow never occurs, 
+  /// so the second value is always false.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![2].overflowing_div(u12![1]), (u12![2], false));
+  /// assert_eq!(u12![2048].overflowing_div(u12![2]), (u12![1024], false));
+  /// assert_eq!(u12![4095].overflowing_div(u12![2]), (u12![2047], false));
+  /// # }
+  /// ```
+  pub fn overflowing_div(self, other: Self) -> (Self, bool) {
+    (self.wrapping_div(other), false)
   }
 
   /// Checked integer negation.
