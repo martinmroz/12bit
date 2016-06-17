@@ -57,21 +57,61 @@ impl U12 {
   }
 
   /// Returns the number of ones in the binary representation of `self`.
+  /// # Examples
+  /// Basic usage:
+  ///
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![0b001011111100].count_ones(), 7);
+  /// # }
+  /// ```
   pub fn count_ones(self) -> u32 {
     self.0.count_ones()
   }
 
   /// Returns the number of zeros in the binary representation of `self`.
+  /// # Examples
+  /// Basic usage:
+  ///
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![0b001011111000].count_zeros(), 6);
+  /// # }
+  /// ```
   pub fn count_zeros(self) -> u32 {
     self.0.count_zeros() - 4
   }
 
   /// Returns the number of leading zeros in the binary representation of `self`.
+  /// # Examples
+  /// Basic usage:
+  ///
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![0b001011111000].leading_zeros(), 2);
+  /// # }
+  /// ```
   pub fn leading_zeros(self) -> u32 {
     self.0.leading_zeros() - 4
   }
 
   /// Returns the number of trailing zeros in the binary representation of `self`.
+  /// # Examples
+  /// Basic usage:
+  ///
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![0b001011111000].trailing_zeros(), 3);
+  /// # }
+  /// ```
   pub fn trailing_zeros(self) -> u32 {
     self.0.trailing_zeros()
   }
