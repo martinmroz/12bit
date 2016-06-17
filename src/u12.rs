@@ -1,6 +1,6 @@
 
 use std::marker;
-use std::ops::{Add, Div, Mul, Not, Sub};
+use std::ops::{Add, Div, Mul, Not, Rem, Sub};
 
 #[derive(Debug,Clone,Copy,PartialEq,Eq,PartialOrd,Ord)]
 pub struct U12(u16);
@@ -396,6 +396,71 @@ impl U12 {
     }
   }
 
+  /// Checked integer remainder. 
+  /// Computes `self % other`, returning `None` if `other == 0` or the 
+  /// operation results in underflow or overflow.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![5].checked_rem(u12![2]), Some(u12![1]));
+  /// assert_eq!(u12![5].checked_rem(u12![0]), None);
+  /// # }
+  /// ```
+  pub fn checked_rem(self, other: Self) -> Option<Self> {
+    match self.0.checked_rem(other.0) {
+      Some(value) => Some(U12(value)),
+      None => None
+    }
+  }
+
+  /// Wrapping (modular) integer remainder.
+  /// Computes `self % other`. Wrapped remainder calculation on unsigned types 
+  /// is just the regular remainder calculation. There's no way wrapping could ever 
+  /// happen. This function exists, so that all operations are accounted for in the 
+  /// wrapping operations.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![100].wrapping_rem(u12![10]), u12![0]);
+  /// # }
+  /// ```
+  pub fn wrapping_rem(self, other: Self) -> Self {
+    U12(self.0.wrapping_rem(other.0))
+  }
+
+  /// Calculates the remainder when `self` is divided by `other`.
+  /// Returns a tuple of the remainder after dividing along with a boolean indicating 
+  /// whether an arithmetic overflow would occur. Note that for unsigned integers 
+  /// overflow never occurs, so the second value is always false.
+  ///
+  /// # Panics
+  /// This function will panic if `other` is `0`.
+  ///
+  /// # Examples
+  /// Basic usage:
+  /// 
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![5].overflowing_rem(u12![2]), (u12![1], false));
+  /// # }
+  /// ```
+  pub fn overflowing_rem(self, other: Self) -> (Self, bool) {
+    let (result, overflow) = self.0.overflowing_rem(other.0);
+    (U12(result), overflow)
+  }
+
 }
 
 // MARK: - Non-Failable Conversions - From Smaller Types
@@ -530,6 +595,7 @@ impl_arithmetic_trait_family_for_u12!(Add, add, checked_add, "arithmetic overflo
 impl_arithmetic_trait_family_for_u12!(Sub, sub, checked_sub, "arithmetic underflow");
 impl_arithmetic_trait_family_for_u12!(Mul, mul, checked_mul, "arithmetic overflow");
 impl_arithmetic_trait_family_for_u12!(Div, div, checked_div, "arithmetic exception");
+impl_arithmetic_trait_family_for_u12!(Rem, rem, checked_rem, "arithmetic exception");
 
 // MARK: - Not
 
