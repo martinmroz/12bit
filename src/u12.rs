@@ -8,13 +8,15 @@ pub struct U12(u16);
 // MARK: - Literal Macro
 
 /// Creates a 12-bit value via unchecked-into conversion.
-/// This is primarily to simplify describing U12 literal values, as the
-/// `$x` parameter is first bound to a 16-bit value. This eliminates the need
-/// for the caller to specify the type of the literal and does compile-time
-/// validation that no literal greater than `0xFFFF` is specified; this
-/// will panic for values in `0x1000...0xFFFF`.
+/// This is meant to simplify describing U12 literal values, as the
+/// `$x` parameter is first bound to a 16-bit value. This allows the compiler to
+/// elide the type of the literal, and does compile-time validation that no
+/// literal greater than `0xFFFF` is specified; this will panic for values
+/// in the range `0x1000...0xFFFF`.
 ///
-/// # Example
+/// # Examples
+/// Basic usage:
+///
 /// ```rust
 /// # #[macro_use] extern crate twelve_bit;
 /// use twelve_bit::u12::*;
@@ -80,11 +82,13 @@ impl U12 {
   /// # Examples
   /// Basic usage:
   /// 
-  /// ```
-  /// use twelve_bit::u12::U12;
-  ///
-  /// assert_eq!(U12::from(1u8).checked_add(1u8.into()), Some(U12::from(2u8)));
-  /// assert_eq!(U12::max_value().checked_add(1u8.into()), None);
+  /// ```rust
+  /// # #[macro_use] extern crate twelve_bit;
+  /// use twelve_bit::u12::*;
+  /// # fn main() {
+  /// assert_eq!(u12![1].checked_add(u12![1]), Some(u12![2]));
+  /// assert_eq!(U12::max_value().checked_add(u12![1]), None);
+  /// # }
   /// ```
   pub fn checked_add(self, other: Self) -> Option<Self> {
     match self.0 + other.0 {
@@ -439,7 +443,7 @@ impl Default for U12 {
 macro_rules! impl_arithmetic_trait_family_for_u12 {
   ($trait_name:ident, $trait_method:ident, $checked_method:ident, $message:expr) => {
 
-    /// Implementation of U12.op(U12) -> U12.
+    // Implementation of U12.op(U12) -> U12.
     impl $trait_name<U12> for U12 {
       type Output = U12;
       fn $trait_method(self, other: U12) -> Self::Output {
@@ -452,7 +456,7 @@ macro_rules! impl_arithmetic_trait_family_for_u12 {
       }
     }
 
-    /// Implementation of (&'a U12).op(U12) -> U12.
+    // Implementation of (&'a U12).op(U12) -> U12.
     impl<'a> $trait_name<U12> for &'a U12 {
       type Output = U12;
       fn $trait_method(self, other: U12) -> Self::Output {
@@ -460,7 +464,7 @@ macro_rules! impl_arithmetic_trait_family_for_u12 {
       }
     }
 
-    /// Implementation of U12.op(&'a U12) -> U12.
+    // Implementation of U12.op(&'a U12) -> U12.
     impl<'a> $trait_name<&'a U12> for U12 {
       type Output = U12;
       fn $trait_method(self, other: &'a U12) -> Self::Output {
@@ -468,7 +472,7 @@ macro_rules! impl_arithmetic_trait_family_for_u12 {
       }
     }
 
-    /// Implementation of (&'a U12).op(&'b U12) -> U12.
+    // Implementation of (&'a U12).op(&'b U12) -> U12.
     impl<'a,'b> $trait_name<&'a U12> for &'b U12 {
       type Output = U12;
       fn $trait_method(self, other: &'a U12) -> Self::Output {
