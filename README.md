@@ -23,7 +23,7 @@ In addition, and this to your crate root:
 extern crate twelve_bit;
 ```
 
-Here is an example demonstrating how to interact with the unsigned 12-bit data type `U12`.
+Here is an example demonstrating how to interact with the `U12` data type.
 
 
 ```rust
