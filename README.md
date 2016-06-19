@@ -33,10 +33,10 @@ extern crate twelve_bit;
 use twelve_bit::u12::*;
 
 fn main() {
-  let maximum = u12![4095];
-  let sum = u12![1] + u12![2];
-  assert_eq!(maximum, U12::maximum_value());
-  assert_eq!(maximum.overflowing_add(u12![1]), (u12![0], true));
+  assert_eq!(u12![1] + u12![2], u12![3]);
+  assert_eq!(u12![4095], U12::maximum_value());
+  assert_eq!(u12![4095].overflowing_add(u12![1]), (u12![0], true));
+  assert_eq!(u12![4095].overflowing_add(u12![1]), (u12![0], true));
 }
 ```
 
