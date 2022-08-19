@@ -151,7 +151,7 @@ impl U12 {
   /// ```
   pub fn checked_add(self, other: Self) -> Option<Self> {
     match self.0 + other.0 {
-      result @ 0...4095 => Some(U12(result)),
+      result @ 0..=4095 => Some(U12(result)),
       _ => None
     }
   }
@@ -170,7 +170,7 @@ impl U12 {
   /// ```
   pub fn saturating_add(self, other: Self) -> Self {
     match self.0 + other.0 {
-      result @ 0...4095 => U12(result),
+      result @ 0..=4095 => U12(result),
       _ => Self::max_value()
     }
   }
