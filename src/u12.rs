@@ -37,7 +37,7 @@ pub struct U12(u16);
 macro_rules! u12 {
     ( $x:expr ) => {{
         let x: u16 = $x;
-        let value: U12 = x.unchecked_into();
+        let value = U12::from_u16(x);
         value
     }};
 }
@@ -747,6 +747,18 @@ impl U12 {
     /// ```
     pub const fn checked_bitxor(self, rhs: Self) -> Option<Self> {
         Some(U12(self.0 ^ rhs.0))
+    }
+
+    /// Conversion of an u16 value into u12. Basically a workaround since we cannot have a const implementation of From.
+    ///
+    /// # Panics
+    /// Panics if x does not fit into 12 bits of data.
+    pub const fn from_u16(x: u16) -> Self {
+        if x > Self::max_value().0 {
+            panic!("Cannot fit value into an u12");
+        } else {
+            Self(x)
+        }
     }
 }
 
