@@ -11,4 +11,8 @@ readme = "README.md"
 keywords = ["12bit", "12b"]
 license = "MIT"
 
+[features]
+serde = []
+
 [dependencies]
+serde = "1"

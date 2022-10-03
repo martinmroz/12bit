@@ -11,6 +11,9 @@ use std::cmp;
 use std::marker;
 use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Not, Rem, Shl, Shr, Sub};
 
+#[cfg(feature = "serde")]
+mod serde;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct U12(u16);
 
