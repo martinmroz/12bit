@@ -4,7 +4,6 @@ twelve_bit
 A Rust library for representing 12-bit unsigned values. This is primarily useful for implementing Chip-8 assemblers and interpreters safely. The type implements bulk of the standard Rust literal semantics and operators, and much of the documentation is adapted from the u16 intrinsic type.
 
 [![](http://meritbadge.herokuapp.com/twelve_bit)](https://crates.io/crates/twelve_bit)
-[![Build Status](https://travis-ci.org/martinmroz/12bit.svg?branch=master)](https://travis-ci.org/martinmroz/12bit)
 [![Coverage Status](https://coveralls.io/repos/github/martinmroz/12bit/badge.svg?branch=master)](https://coveralls.io/github/martinmroz/12bit?branch=master)
 
 ### Usage
