@@ -8,8 +8,11 @@
 //
 
 use std::cmp;
+use std::fmt::Debug;
 use std::marker;
+use std::num::{IntErrorKind, ParseIntError};
 use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Not, Rem, Shl, Shr, Sub};
+use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct U12(u16);
@@ -965,3 +968,44 @@ impl_shift_trait_family_for_u12!(u64, Shr, shr, checked_shr, "logic underflow");
 impl_shift_trait_family_for_u12!(i64, Shr, shr, checked_shr, "logic underflow");
 impl_shift_trait_family_for_u12!(usize, Shr, shr, checked_shr, "logic underflow");
 impl_shift_trait_family_for_u12!(isize, Shr, shr, checked_shr, "logic underflow");
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ParseU12Error {
+    kind: IntErrorKind,
+}
+
+impl ParseU12Error {
+    /// Outputs the detailed cause of parsing an u12 failing.
+    pub fn kind(&self) -> &IntErrorKind {
+        &self.kind
+    }
+}
+
+impl From<ParseIntError> for ParseU12Error {
+    fn from(x: ParseIntError) -> Self {
+        ParseU12Error {
+            kind: x.kind().clone(),
+        }
+    }
+}
+
+impl std::fmt::Display for ParseU12Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.kind.fmt(f)
+    }
+}
+
+impl FromStr for U12 {
+    type Err = ParseU12Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let val = u16::from_str_radix(s, 10)?;
+        if val > U12::max_value().0 {
+            Err(ParseU12Error {
+                kind: IntErrorKind::PosOverflow,
+            })
+        } else {
+            Ok(U12(val))
+        }
+    }
+}
