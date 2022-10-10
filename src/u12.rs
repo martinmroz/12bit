@@ -7,7 +7,6 @@
 // distributed except according to those terms.
 //
 
-use std::cmp;
 use std::marker;
 use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Not, Rem, Shl, Shr, Sub};
 
@@ -38,7 +37,7 @@ pub struct U12(u16);
 macro_rules! u12 {
     ( $x:expr ) => {{
         let x: u16 = $x;
-        let value: U12 = x.unchecked_into();
+        let value = U12::from_u16(x);
         value
     }};
 }
@@ -55,12 +54,12 @@ pub const MIN: U12 = U12(0x000);
 
 impl U12 {
     /// Returns the smallest value that can be represented by this integer type.
-    pub fn min_value() -> Self {
+    pub const fn min_value() -> Self {
         MIN
     }
 
     /// Returns the largest value that can be represented by this integer type.
-    pub fn max_value() -> Self {
+    pub const fn max_value() -> Self {
         MAX
     }
 
@@ -77,7 +76,7 @@ impl U12 {
     /// assert_eq!(u12![0b111111111111].count_ones(), 12)
     /// # }
     /// ```
-    pub fn count_ones(self) -> u32 {
+    pub const fn count_ones(self) -> u32 {
         self.0.count_ones()
     }
 
@@ -94,7 +93,7 @@ impl U12 {
     /// assert_eq!(u12![0b111111111111].count_zeros(), 0)
     /// # }
     /// ```
-    pub fn count_zeros(self) -> u32 {
+    pub const fn count_zeros(self) -> u32 {
         self.0.count_zeros() - 4
     }
 
@@ -112,7 +111,7 @@ impl U12 {
     /// assert_eq!(u12![0b000000000000].leading_zeros(), 12);
     /// # }
     /// ```
-    pub fn leading_zeros(self) -> u32 {
+    pub const fn leading_zeros(self) -> u32 {
         self.0.leading_zeros() - 4
     }
 
@@ -130,8 +129,13 @@ impl U12 {
     /// assert_eq!(u12![0b000000000000].trailing_zeros(), 12);
     /// # }
     /// ```
-    pub fn trailing_zeros(self) -> u32 {
-        cmp::min(self.0.trailing_zeros(), 12)
+    pub const fn trailing_zeros(self) -> u32 {
+        let res = self.0.trailing_zeros();
+        if res >= 12 {
+            12
+        } else {
+            res
+        }
     }
 
     /// Checked integer addition.
@@ -148,7 +152,7 @@ impl U12 {
     /// assert_eq!(U12::max_value().checked_add(u12![1]), None);
     /// # }
     /// ```
-    pub fn checked_add(self, other: Self) -> Option<Self> {
+    pub const fn checked_add(self, other: Self) -> Option<Self> {
         match self.0 + other.0 {
             result @ 0..=4095 => Some(U12(result)),
             _ => None,
@@ -167,7 +171,7 @@ impl U12 {
     /// assert_eq!(U12::from(1u8).saturating_add(1u8.into()), U12::from(2u8));
     /// assert_eq!(U12::max_value().saturating_add(1u8.into()), U12::max_value());
     /// ```
-    pub fn saturating_add(self, other: Self) -> Self {
+    pub const fn saturating_add(self, other: Self) -> Self {
         match self.0 + other.0 {
             result @ 0..=4095 => U12(result),
             _ => Self::max_value(),
@@ -186,7 +190,7 @@ impl U12 {
     /// assert_eq!(U12::from(1u8).wrapping_add(1u8.into()), U12::from(2u8));
     /// assert_eq!(U12::max_value().wrapping_add(3u8.into()), U12::from(2u8));
     /// ```
-    pub fn wrapping_add(self, other: Self) -> Self {
+    pub const fn wrapping_add(self, other: Self) -> Self {
         U12((self.0 + other.0) & 0xFFF)
     }
 
@@ -204,7 +208,7 @@ impl U12 {
     /// assert_eq!(U12::from(1u8).overflowing_add(1u8.into()), (U12::from(2u8), false));
     /// assert_eq!(U12::max_value().overflowing_add(3u8.into()), (U12::from(2u8), true));
     /// ```
-    pub fn overflowing_add(self, other: Self) -> (Self, bool) {
+    pub const fn overflowing_add(self, other: Self) -> (Self, bool) {
         match self.checked_add(other) {
             Some(result) => (result, false),
             None => (self.wrapping_add(other), true),
@@ -223,8 +227,12 @@ impl U12 {
     /// assert_eq!(U12::from(1u8).checked_sub(1u8.into()), Some(U12::from(0u8)));
     /// assert_eq!(U12::min_value().checked_sub(1u8.into()), None);
     /// ```
-    pub fn checked_sub(self, other: Self) -> Option<Self> {
-        self.0.checked_sub(other.0).map(|value| U12(value))
+    pub const fn checked_sub(self, other: Self) -> Option<Self> {
+        if let Some(x) = self.0.checked_sub(other.0) {
+            Some(U12(x))
+        } else {
+            None
+        }
     }
 
     /// Saturating integer subtraction.
@@ -239,7 +247,7 @@ impl U12 {
     /// assert_eq!(U12::from(1u8).saturating_sub(1u8.into()), U12::min_value());
     /// assert_eq!(U12::min_value().saturating_sub(5u8.into()), U12::min_value());
     /// ```
-    pub fn saturating_sub(self, other: Self) -> Self {
+    pub const fn saturating_sub(self, other: Self) -> Self {
         U12(self.0.saturating_sub(other.0))
     }
 
@@ -255,7 +263,7 @@ impl U12 {
     /// assert_eq!(U12::from(1u8).wrapping_sub(1u8.into()), U12::min_value());
     /// assert_eq!(U12::min_value().wrapping_sub(5u8.into()), (0xFFB as u16).unchecked_into());
     /// ```
-    pub fn wrapping_sub(self, other: Self) -> Self {
+    pub const fn wrapping_sub(self, other: Self) -> Self {
         U12(self.0.wrapping_sub(other.0) & 0xFFF)
     }
 
@@ -273,7 +281,7 @@ impl U12 {
     /// assert_eq!(U12::from(1u8).overflowing_sub(1u8.into()), (U12::from(0u8), false));
     /// assert_eq!(U12::min_value().overflowing_sub(1u8.into()), (0xFFFu16.unchecked_into(), true));
     /// ```
-    pub fn overflowing_sub(self, other: Self) -> (Self, bool) {
+    pub const fn overflowing_sub(self, other: Self) -> (Self, bool) {
         match self.checked_sub(other) {
             Some(result) => (result, false),
             None => (self.wrapping_sub(other), true),
@@ -293,7 +301,7 @@ impl U12 {
     /// assert_eq!(U12::from(2u8).checked_mul((2048u16).unchecked_into()), None);
     /// assert_eq!(U12::from(2u8).checked_mul((4095u16).unchecked_into()), None);
     /// ```
-    pub fn checked_mul(self, other: Self) -> Option<Self> {
+    pub const fn checked_mul(self, other: Self) -> Option<Self> {
         match self.0.checked_mul(other.0) {
             Some(small) if small < 4096 => Some(U12(small)),
             _ => None,
@@ -313,7 +321,7 @@ impl U12 {
     /// assert_eq!(U12::from(2u8).saturating_mul((2048u16).unchecked_into()), U12::max_value());
     /// assert_eq!(U12::from(2u8).saturating_mul((4095u16).unchecked_into()), U12::max_value());
     /// ```
-    pub fn saturating_mul(self, other: Self) -> Self {
+    pub const fn saturating_mul(self, other: Self) -> Self {
         match self.0.checked_mul(other.0) {
             Some(small) if small < 4096 => U12(small),
             _ => Self::max_value(),
@@ -333,7 +341,7 @@ impl U12 {
     /// assert_eq!(U12::from(2u8).wrapping_mul((2048u16).unchecked_into()), 0u8.into());
     /// assert_eq!(U12::from(2u8).wrapping_mul((4095u16).unchecked_into()), (0xFFE as u16).unchecked_into());
     /// ```
-    pub fn wrapping_mul(self, other: Self) -> Self {
+    pub const fn wrapping_mul(self, other: Self) -> Self {
         U12(self.0.wrapping_mul(other.0) & 0xFFF)
     }
 
@@ -353,7 +361,7 @@ impl U12 {
     /// assert_eq!(u12![2].overflowing_mul(u12![4095]), (u12![0xFFE], true));
     /// # }
     /// ```
-    pub fn overflowing_mul(self, other: Self) -> (Self, bool) {
+    pub const fn overflowing_mul(self, other: Self) -> (Self, bool) {
         match self.checked_mul(other) {
             Some(result) => (result, false),
             None => (self.wrapping_mul(other), true),
@@ -374,8 +382,12 @@ impl U12 {
     /// assert_eq!(U12::from(2u8).checked_div((2048u16).unchecked_into()), Some(U12::min_value()));
     /// assert_eq!(U12::from(2u8).checked_div(2u8.into()), Some(U12::from(1u8)));
     /// ```
-    pub fn checked_div(self, other: Self) -> Option<Self> {
-        self.0.checked_div(other.0).map(|small| U12(small))
+    pub const fn checked_div(self, other: Self) -> Option<Self> {
+        if let Some(x) = self.0.checked_div(other.0) {
+            Some(U12(x))
+        } else {
+            None
+        }
     }
 
     /// Wrapping (modular) division.
@@ -392,7 +404,7 @@ impl U12 {
     /// assert_eq!(U12::from(2u8).wrapping_div((2048u16).unchecked_into()), U12::min_value());
     /// assert_eq!(U12::from(2u8).wrapping_div(2u8.into()), U12::from(1u8));
     /// ```
-    pub fn wrapping_div(self, other: Self) -> Self {
+    pub const fn wrapping_div(self, other: Self) -> Self {
         U12(self.0.wrapping_div(other.0))
     }
 
@@ -413,7 +425,7 @@ impl U12 {
     /// assert_eq!(u12![4095].overflowing_div(u12![2]), (u12![2047], false));
     /// # }
     /// ```
-    pub fn overflowing_div(self, other: Self) -> (Self, bool) {
+    pub const fn overflowing_div(self, other: Self) -> (Self, bool) {
         (self.wrapping_div(other), false)
     }
 
@@ -430,7 +442,7 @@ impl U12 {
     /// assert_eq!(U12::from(0u8).checked_neg(), Some(0u8.into()));
     /// assert_eq!(U12::from(2u8).checked_neg(), None);
     /// ```
-    pub fn checked_neg(self) -> Option<Self> {
+    pub const fn checked_neg(self) -> Option<Self> {
         match self.0 {
             0 => Some(self),
             _ => None,
@@ -449,7 +461,7 @@ impl U12 {
     /// assert_eq!(U12::from(2u8).wrapping_neg(), 0xFFEu16.unchecked_into());
     /// assert_eq!(U12::from(255u8).wrapping_neg(), 0xF01u16.unchecked_into());
     /// ```
-    pub fn wrapping_neg(self) -> Self {
+    pub const fn wrapping_neg(self) -> Self {
         U12(self.0.wrapping_neg() & 0xFFF)
     }
 
@@ -467,7 +479,7 @@ impl U12 {
     /// assert_eq!(U12::from(0u8).overflowing_neg(), (0u8.into(), false));
     /// assert_eq!(U12::from(2u8).overflowing_neg(), (0xFFEu16.unchecked_into(), true));
     /// ```
-    pub fn overflowing_neg(self) -> (U12, bool) {
+    pub const fn overflowing_neg(self) -> (U12, bool) {
         match self.0 {
             0 => (self, false),
             _ => (self.wrapping_neg(), true),
@@ -489,8 +501,12 @@ impl U12 {
     /// assert_eq!(u12![5].checked_rem(u12![0]), None);
     /// # }
     /// ```
-    pub fn checked_rem(self, other: Self) -> Option<Self> {
-        self.0.checked_rem(other.0).map(|value| U12(value))
+    pub const fn checked_rem(self, other: Self) -> Option<Self> {
+        if let Some(x) = self.0.checked_rem(other.0) {
+            Some(U12(x))
+        } else {
+            None
+        }
     }
 
     /// Wrapping (modular) integer remainder.
@@ -509,7 +525,7 @@ impl U12 {
     /// assert_eq!(u12![100].wrapping_rem(u12![10]), u12![0]);
     /// # }
     /// ```
-    pub fn wrapping_rem(self, other: Self) -> Self {
+    pub const fn wrapping_rem(self, other: Self) -> Self {
         U12(self.0.wrapping_rem(other.0))
     }
 
@@ -531,7 +547,7 @@ impl U12 {
     /// assert_eq!(u12![5].overflowing_rem(u12![2]), (u12![1], false));
     /// # }
     /// ```
-    pub fn overflowing_rem(self, other: Self) -> (Self, bool) {
+    pub const fn overflowing_rem(self, other: Self) -> (Self, bool) {
         let (result, overflow) = self.0.overflowing_rem(other.0);
         (U12(result), overflow)
     }
@@ -552,11 +568,15 @@ impl U12 {
     /// assert_eq!(u12![0b000000000001].checked_shl(11), Some(u12![0b100000000000]));
     /// # }
     /// ```
-    pub fn checked_shl(self, rhs: u32) -> Option<Self> {
+    pub const fn checked_shl(self, rhs: u32) -> Option<Self> {
         if rhs >= 12 {
             None
         } else {
-            self.0.checked_shl(rhs).map(|value| U12(value))
+            if let Some(x) = self.0.checked_shl(rhs) {
+                Some(U12(x))
+            } else {
+                None
+            }
         }
     }
 
@@ -575,8 +595,12 @@ impl U12 {
     /// assert_eq!(u12![0b000000000001].wrapping_shl(11), u12![0b100000000000]);
     /// # }
     /// ```
-    pub fn wrapping_shl(self, rhs: u32) -> Self {
-        self.checked_shl(rhs % 12).unwrap()
+    pub const fn wrapping_shl(self, rhs: u32) -> Self {
+        if let Some(x) = self.checked_shl(rhs % 12) {
+            x
+        } else {
+            unreachable!()
+        }
     }
 
     /// Shifts self left by rhs bits.
@@ -597,7 +621,7 @@ impl U12 {
     /// assert_eq!(u12![0b000000000001].overflowing_shl(11), (u12![0b100000000000], false));
     /// # }
     /// ```
-    pub fn overflowing_shl(self, rhs: u32) -> (Self, bool) {
+    pub const fn overflowing_shl(self, rhs: u32) -> (Self, bool) {
         (self.wrapping_shl(rhs), rhs >= 12)
     }
 
@@ -617,11 +641,15 @@ impl U12 {
     /// assert_eq!(u12![0b100000000000].checked_shr(11), Some(u12![0b000000000001]));
     /// # }
     /// ```
-    pub fn checked_shr(self, rhs: u32) -> Option<Self> {
+    pub const fn checked_shr(self, rhs: u32) -> Option<Self> {
         if rhs >= 12 {
             None
         } else {
-            self.0.checked_shr(rhs).map(|value| U12(value))
+            if let Some(x) = self.0.checked_shr(rhs) {
+                Some(U12(x))
+            } else {
+                None
+            }
         }
     }
 
@@ -640,8 +668,12 @@ impl U12 {
     /// assert_eq!(u12![0b100000000000].wrapping_shr(11), u12![0b000000000001]);
     /// # }
     /// ```
-    pub fn wrapping_shr(self, rhs: u32) -> Self {
-        self.checked_shr(rhs % 12).unwrap()
+    pub const fn wrapping_shr(self, rhs: u32) -> Self {
+        if let Some(x) = self.checked_shr(rhs % 12) {
+            x
+        } else {
+            unreachable!()
+        }
     }
 
     /// Shifts the receiver right by `rhs` bits.
@@ -662,7 +694,7 @@ impl U12 {
     /// assert_eq!(u12![0b100000000000].overflowing_shr(11), (u12![0b000000000001], false));
     /// # }
     /// ```
-    pub fn overflowing_shr(self, rhs: u32) -> (Self, bool) {
+    pub const fn overflowing_shr(self, rhs: u32) -> (Self, bool) {
         (self.wrapping_shr(rhs), rhs >= 12)
     }
 
@@ -679,8 +711,8 @@ impl U12 {
     /// assert_eq!(u12![0b111100001111].checked_bitand(u12![0b111100000000]), Some(u12![0b111100000000]));
     /// # }
     /// ```
-    pub fn checked_bitand(self, rhs: Self) -> Option<Self> {
-        Some(U12(self.0.bitand(rhs.0)))
+    pub const fn checked_bitand(self, rhs: Self) -> Option<Self> {
+        Some(U12(self.0 & rhs.0))
     }
 
     /// Checked bitwise-or of the receiver with `rhs`.
@@ -696,8 +728,8 @@ impl U12 {
     /// assert_eq!(u12![0b111100001111].checked_bitor(u12![0b111100000000]), Some(u12![0b111100001111]));
     /// # }
     /// ```
-    pub fn checked_bitor(self, rhs: Self) -> Option<Self> {
-        Some(U12(self.0.bitor(rhs.0)))
+    pub const fn checked_bitor(self, rhs: Self) -> Option<Self> {
+        Some(U12(self.0 | rhs.0))
     }
 
     /// Checked bitwise-xor of the receiver with `rhs`.
@@ -713,8 +745,20 @@ impl U12 {
     /// assert_eq!(u12![0b111100001111].checked_bitxor(u12![0b111100000000]), Some(u12![0b000000001111]));
     /// # }
     /// ```
-    pub fn checked_bitxor(self, rhs: Self) -> Option<Self> {
-        Some(U12(self.0.bitxor(rhs.0)))
+    pub const fn checked_bitxor(self, rhs: Self) -> Option<Self> {
+        Some(U12(self.0 ^ rhs.0))
+    }
+
+    /// Conversion of an u16 value into u12. Basically a workaround since we cannot have a const implementation of From.
+    ///
+    /// # Panics
+    /// Panics if x does not fit into 12 bits of data.
+    pub const fn from_u16(x: u16) -> Self {
+        if x > Self::max_value().0 {
+            panic!("Cannot fit value into an u12");
+        } else {
+            Self(x)
+        }
     }
 }
 
